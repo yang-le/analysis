@@ -2,22 +2,38 @@ import Mathlib.Tactic
 
 namespace Chapter2
 
-/-- 假设 2.6 （非正式的） 存在一个数系ℕ，我们称ℕ中的元素为自然数 -/
+/--
+假设 2.6
+
+（非正式的） 存在一个数系ℕ，我们称ℕ中的元素为自然数
+-/
 inductive Nat where
 | zero : Nat
 | succ : Nat → Nat
 deriving Repr, DecidableEq
 
-/-- 公理 2.1 {lit}`0`是一个自然数 -/
+/--
+公理 2.1
+
+{lit}`0`是一个自然数
+-/
 instance Nat.instZero : Zero Nat := ⟨zero⟩
 #check (0:Nat)
 
-/-- 公理 2.2 如果{lit}`n`是一个自然数，那么`n++`也是一个自然数 -/
+/--
+公理 2.2
+
+如果{lit}`n`是一个自然数，那么`n++`也是一个自然数
+-/
 postfix:100 "++" => Nat.succ
 #check (fun n ↦ n++)
 
-/-- 定义 2.1.3 定义{lit}`1`为数字{lit}`0++`, {lit}`2`为数字{lit}`1++`, {lit}`3`为数字{lit}`2++`, 等等 -/
-instance Nat.instOfNat {n:_root_.Nat} : OfNat Nat n where
+/--
+定义 2.1.3
+
+定义{lit}`1`为数字{lit}`0++`, {lit}`2`为数字{lit}`1++`, {lit}`3`为数字{lit}`2++`, 等等
+-/
+instance Nat.instOfNat {n : _root_.Nat} : OfNat Nat n where
   ofNat := _root_.Nat.rec 0 (fun _ n ↦ n++) n
 
 instance Nat.instOne : One Nat := ⟨1⟩
@@ -27,32 +43,48 @@ lemma Nat.zero_succ : 0++ = 1 := by rfl
 lemma Nat.one_succ : 1++ = 2 := by rfl
 #check (2:Nat)
 
-/-- 命题 2.1.4 {lit}`3`是一个自然数 -/
+/--
+命题 2.1.4
+
+{lit}`3`是一个自然数
+-/
 lemma Nat.two_succ : 2++ = 3 := by rfl
 #check (3:Nat)
 
-/-- 公理 2.3 {lit}`0`不紧跟在任何自然数之后。换言之，对任意一个自然数{lit}`n`, {lit}`n++ ≠ 0`均成立 -/
-theorem Nat.succ_ne (n:Nat) : n++ ≠ 0 := by
+/--
+公理 2.3
+
+{lit}`0`不紧跟在任何自然数之后。换言之，对任意一个自然数{lit}`n`, {lit}`n++ ≠ 0`均成立
+-/
+theorem Nat.succ_ne (n : Nat) : n++ ≠ 0 := by
   by_contra h
   injection h
 
-/-- 命题 2.1.6 {lit}`4`不等于{lit}`0` -/
-theorem Nat.four_ne : (4:Nat) ≠ 0 := by
+/--
+命题 2.1.6
+
+{lit}`4`不等于{lit}`0`
+-/
+theorem Nat.four_ne : (4 : Nat) ≠ 0 := by
   -- 根据定义，`4 = 3++`
   change 3++ ≠ 0
   -- 根据公理 2.3, `3++`不等于0
   exact succ_ne _
 
 /--
-公理 2.4 对于不同的自然数而言，紧跟在它们之后的数字也一定是不同的。
+公理 2.4
+
+对于不同的自然数而言，紧跟在它们之后的数字也一定是不同的。
 也就是说，如果{lit}`n`和{lit}`m`都是自然数，并且{lit}`n ≠ m`，那么{lit}`n++ ≠ m++`。
 等价说法为，如果{lit}`n++ = m++`，那么一定有{lit}`n = m`。
 -/
-theorem Nat.succ_cancel {n m : Nat} (hnm: n++ = m++) : n = m := by
+theorem Nat.succ_cancel {n m : Nat} (hnm : n++ = m++) : n = m := by
   injection hnm
 
 /--
-公理 2.4 对于不同的自然数而言，紧跟在它们之后的数字也一定是不同的。
+公理 2.4
+
+对于不同的自然数而言，紧跟在它们之后的数字也一定是不同的。
 也就是说，如果{lit}`n`和{lit}`m`都是自然数，并且{lit}`n ≠ m`，那么{lit}`n++ ≠ m++`。
 等价说法为，如果{lit}`n++ = m++`，那么一定有{lit}`n = m`。
 -/
@@ -61,8 +93,12 @@ theorem Nat.succ_ne_succ (n m : Nat) : n ≠ m → n++ ≠ m++ := by
   contrapose h
   exact succ_cancel h
 
-/-- 命题 2.1.8 {lit}`6`不等于{lit}`2` -/
-theorem Nat.six_ne_two : (6:Nat) ≠ 2 := by
+/--
+命题 2.1.8
+
+{lit}`6`不等于{lit}`2`
+-/
+theorem Nat.six_ne_two : (6 : Nat) ≠ 2 := by
   by_contra h
   change 5++ = 1++ at h
   apply succ_cancel at h
@@ -71,11 +107,17 @@ theorem Nat.six_ne_two : (6:Nat) ≠ 2 := by
   have := four_ne
   contradiction
 
-theorem Nat.six_ne_two' : (6:Nat) ≠ 2 := by
+/--
+命题 2.1.8
+
+{lit}`6`不等于{lit}`2`
+-/
+theorem Nat.six_ne_two' : (6 : Nat) ≠ 2 := by
   decide
 
 /--
-公理 2.5 （数学归纳原理）
+公理 2.5 数学归纳原理
+
 令{lit}`P(n)`表示自然数{lit}`n`的任意一个性质，如果{lit}`P(0)`为真且{lit}`P(n)`为真时一定有{lit}`P(n++)`也为真，
 那么对于任意自然数{lit}`n`，{lit}`P(n)`一定为真。
 -/
@@ -92,14 +134,16 @@ abbrev Nat.recurse (f : Nat → Nat → Nat) (c : Nat) : Nat → Nat := fun n �
 | n++ => f n (recurse f c n)
 
 /--
-命题 2.16 （递归定义）
+命题 2.16 递归定义
+
 假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
 那么对任意自然数{lit}`n`，都能够确定唯一的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
 -/
 theorem Nat.recurse_zero (f : Nat → Nat → Nat) (c : Nat) : Nat.recurse f c 0 = c := by rfl
 
 /--
-命题 2.16 （递归定义）
+命题 2.16 递归定义
+
 假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
 那么对任意自然数{lit}`n`，都能够确定唯一的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
 -/
@@ -107,7 +151,8 @@ theorem Nat.recurse_succ (f : Nat → Nat → Nat) (c : Nat) (n : Nat) :
     Nat.recurse f c (n++) = f n (recurse f c n) := by rfl
 
 /--
-命题 2.16 （递归定义）
+命题 2.16 递归定义
+
 假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
 那么对任意自然数{lit}`n`，都能够确定唯一的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
 -/
@@ -126,7 +171,8 @@ theorem Nat.eq_recurse (f : Nat → Nat → Nat) (c : Nat) (a : Nat → Nat) :
   exact recurse_succ _ _
 
 /--
-命题 2.16 （递归定义）
+命题 2.16 递归定义
+
 假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
 那么对任意自然数{lit}`n`，都能够确定**唯一**的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
 -/
