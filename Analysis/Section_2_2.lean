@@ -236,4 +236,163 @@ theorem Nat.succ_gt_self (n : Nat) : n++ > n := by
   apply add_left_cancel at h
   contradiction
 
+/-
+命题 2.2.12 自然数的序的基本性质
+
+令{lit}`a`、{lit}`b`、{lit}`c`为任意自然数，那么
+- {lit}`a ≥ a`
+- 如果{lit}`a ≥ b`并且{lit}`b ≥ c`，那么{lit}`a ≥ c`
+- 如果{lit}`a ≥ b`并且{lit}`b ≥ a`，那么{lit}`a = b`
+- {lit}`a ≥ b`当且仅当{lit}`a + c ≥ b + c`
+- {lit}`a < b`当且仅当{lit}`a++ ≤ b`
+- {lit}`a < b`当且仅当存在正自然数{lit}`d`使得{lit}`b = a + d`
+-/
+
+theorem Nat.ge_refl (a : Nat) : a ≥ a := by
+  use 0
+  rw [add_zero]
+
+@[refl]
+theorem Nat.le_refl (a : Nat) : a ≤ a := a.ge_refl
+
+/-- {lit}`refl`标签使得{tactic}`rfl`可以适用于不等式 -/
+example (a b : Nat) : a + b ≥ a + b := by rfl
+
+theorem Nat.ge_trans {a b c : Nat} (hab : a ≥ b) (hbc : b ≥ c) : a ≥ c := by
+  obtain ⟨x, hx⟩ := hab
+  obtain ⟨y, hy⟩ := hbc
+  use y + x
+  rw [← add_assoc, ← hy, ← hx]
+
+theorem Nat.le_trans {a b c : Nat} (hab : a ≤ b) (hbc : b ≤ c) : a ≤ c := Nat.ge_trans hbc hab
+
+theorem Nat.ge_antisymm {a b : Nat} (hab : a ≥ b) (hba : b ≥ a) : a = b := by
+  obtain ⟨x, hx⟩ := hab
+  obtain ⟨y, hy⟩ := hba
+  nth_rw 1 [hx, ← add_zero b, add_assoc] at hy
+  apply add_left_cancel at hy
+  have := (add_eq_zero x y hy.symm).1
+  rwa [this, add_zero] at hx
+
+theorem Nat.add_ge_add_right (a b c : Nat) : a ≥ b ↔ a + c ≥ b + c := by
+  constructor
+  · rintro ⟨x, rfl⟩
+    use x
+    rw [add_assoc, add_comm x, ← add_assoc]
+  · rintro ⟨x, hx⟩
+    rw [add_comm, add_comm b, add_assoc] at hx
+    apply add_left_cancel at hx
+    use x
+
+theorem Nat.add_ge_add_left (a b c : Nat) : a ≥ b ↔ c + a ≥ c + b := by
+  simp only [add_comm]
+  exact add_ge_add_right _ _ _
+
+theorem Nat.add_le_add_right (a b c : Nat) : a ≤ b ↔ a + c ≤ b + c := add_ge_add_right _ _ _
+
+theorem Nat.add_le_add_left (a b c : Nat) : a ≤ b ↔ c + a ≤ c + b := add_ge_add_left _ _ _
+
+theorem Nat.lt_iff_succ_le (a b : Nat) : a < b ↔ a++ ≤ b := by
+  constructor
+  · rintro ⟨⟨x, hx⟩, hne⟩
+    have xpos : x ≠ 0 := by
+      by_contra h
+      rw [h, add_zero] at hx
+      symm at hx
+      contradiction
+    obtain ⟨y, hy, _⟩ := uniq_succ_eq x xpos
+    use y
+    rwa [succ_add, add_comm, ← succ_add, hy, add_comm]
+  · intro h
+    have le_succ : a ≤ a++ := by
+        use 1
+        exact succ_eq_add_one a
+    constructor
+    · exact le_trans le_succ h
+    · by_contra heq
+      rw [← heq] at h
+      have := ge_antisymm h le_succ
+      rw [succ_eq_add_one] at this
+      nth_rw 1 [← add_zero a] at this
+      apply add_left_cancel at this
+      contradiction
+
+theorem Nat.lt_iff_add_pos (a b : Nat) : a < b ↔ ∃ d : Nat, d.IsPos ∧ b = a + d := by
+  constructor
+  · rintro ⟨⟨x, hx⟩, hne⟩
+    use x
+    have xpos : x ≠ 0 := by
+      by_contra h
+      rw [h, add_zero] at hx
+      symm at hx
+      contradiction
+    exact ⟨xpos, hx⟩
+  · rintro ⟨d, dpos, hd⟩
+    constructor
+    · use d
+    · by_contra h
+      rw [h] at hd
+      nth_rw 1 [← add_zero b] at hd
+      apply add_left_cancel at hd
+      symm at hd
+      contradiction
+
+theorem Nat.ne_of_lt (a b : Nat) : a < b → a ≠ b := by
+  intro h
+  exact h.2
+
+theorem Nat.ne_of_gt (a b : Nat) : a > b → a ≠ b := by
+  intro h
+  exact h.2.symm
+
+theorem Nat.not_lt_of_gt (a b : Nat) : a < b ∧ a > b → False := by
+  intro h
+  have := (ge_antisymm (le_of_lt h.1) (le_of_lt h.2)).symm
+  have := ne_of_lt _ _ h.1
+  contradiction
+
+theorem Nat.not_lt_self {a : Nat} (h : a < a) : False := by
+  apply not_lt_of_gt a a
+  simp [h]
+
+theorem Nat.lt_of_le_of_lt {a b c : Nat} (hab : a ≤ b) (hbc : b < c) : a < c := by
+  rw [lt_iff_add_pos] at *
+  choose d hd using hab
+  choose e he1 he2 using hbc
+  use d + e; split_ands
+  · exact add_pos_right d he1
+  · rw [he2, hd, add_assoc]
+
+theorem Nat.zero_le (a : Nat) : 0 ≤ a := by
+  use a
+  rw [zero_add]
+
+/--
+命题 2.2.13 自然数的序的三歧性
+
+令{lit}`a`和{lit}`b`表示任意两个自然数，那么在下面三种表述中恰有一种表述为真：{lit}`a < b`，{lit}`a = b`，{lit}`a > b`
+-/
+theorem Nat.trichotomous (a b : Nat) : a < b ∨ a = b ∨ a > b := by
+  revert a; apply induction
+  · observe why : 0 ≤ b
+    rw [le_iff_lt_or_eq] at why
+    tauto
+  intro a ih
+  obtain case1 | case2 | case3 := ih
+  · rw [lt_iff_succ_le] at case1
+    rw [le_iff_lt_or_eq] at case1
+    tauto
+  · have why : a++ > b := by
+      rw [case2]
+      exact succ_gt_self b
+    tauto
+  have why : a++ > b := by
+    rw [gt_iff_lt, lt_iff_succ_le]
+    rw [gt_iff_lt, lt_iff_succ_le] at case3
+    have le_succ : a ≤ a++ := by
+      use 1
+      exact succ_eq_add_one a
+    exact le_trans case3 le_succ
+  tauto
+
 end Chapter2
