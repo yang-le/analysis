@@ -5,18 +5,11 @@ defaultTargets = ["Analysis"]
 [leanOptions]
 pp.unicode.fun = true
 linter.unusedVariables = true
-doc.verso = true
-warn.sorry = true
-
-[[require]]
-name = "verso"
-git = "https://github.com/leanprover/verso.git"
-rev = "v4.30.0"
 
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
-rev = "v4.30.0"
+rev = "v4.34.0"
 
 [[lean_lib]]
 name = "Analysis"

@@ -15,7 +15,7 @@ deriving Repr, DecidableEq
 /--
 公理 2.1
 
-{lit}`0`是一个自然数
+`0`是一个自然数
 -/
 instance Nat.instZero : Zero Nat := ⟨zero⟩
 #check (0:Nat)
@@ -23,7 +23,7 @@ instance Nat.instZero : Zero Nat := ⟨zero⟩
 /--
 公理 2.2
 
-如果{lit}`n`是一个自然数，那么`n++`也是一个自然数
+如果`n`是一个自然数，那么`n++`也是一个自然数
 -/
 postfix:100 "++" => Nat.succ
 #check (fun n ↦ n++)
@@ -31,7 +31,7 @@ postfix:100 "++" => Nat.succ
 /--
 定义 2.1.3
 
-定义{lit}`1`为数字{lit}`0++`, {lit}`2`为数字{lit}`1++`, {lit}`3`为数字{lit}`2++`, 等等
+定义`1`为数字`0++`, `2`为数字`1++`, `3`为数字`2++`, 等等
 -/
 instance Nat.instOfNat {n : _root_.Nat} : OfNat Nat n where
   ofNat := _root_.Nat.rec 0 (fun _ n ↦ n++) n
@@ -46,7 +46,7 @@ lemma Nat.one_succ : 1++ = 2 := by rfl
 /--
 命题 2.1.4
 
-{lit}`3`是一个自然数
+`3`是一个自然数
 -/
 lemma Nat.two_succ : 2++ = 3 := by rfl
 #check (3:Nat)
@@ -54,7 +54,7 @@ lemma Nat.two_succ : 2++ = 3 := by rfl
 /--
 公理 2.3
 
-{lit}`0`不紧跟在任何自然数之后。换言之，对任意一个自然数{lit}`n`, {lit}`n++ ≠ 0`均成立
+`0`不紧跟在任何自然数之后。换言之，对任意一个自然数`n`, `n++ ≠ 0`均成立
 -/
 theorem Nat.succ_ne (n : Nat) : n++ ≠ 0 := by
   by_contra h
@@ -63,7 +63,7 @@ theorem Nat.succ_ne (n : Nat) : n++ ≠ 0 := by
 /--
 命题 2.1.6
 
-{lit}`4`不等于{lit}`0`
+`4`不等于`0`
 -/
 theorem Nat.four_ne : (4 : Nat) ≠ 0 := by
   -- 根据定义，`4 = 3++`
@@ -75,8 +75,8 @@ theorem Nat.four_ne : (4 : Nat) ≠ 0 := by
 公理 2.4
 
 对于不同的自然数而言，紧跟在它们之后的数字也一定是不同的。
-也就是说，如果{lit}`n`和{lit}`m`都是自然数，并且{lit}`n ≠ m`，那么{lit}`n++ ≠ m++`。
-等价说法为，如果{lit}`n++ = m++`，那么一定有{lit}`n = m`。
+也就是说，如果`n`和`m`都是自然数，并且`n ≠ m`，那么`n++ ≠ m++`。
+等价说法为，如果`n++ = m++`，那么一定有`n = m`。
 -/
 theorem Nat.succ_cancel {n m : Nat} (hnm : n++ = m++) : n = m := by
   injection hnm
@@ -85,8 +85,8 @@ theorem Nat.succ_cancel {n m : Nat} (hnm : n++ = m++) : n = m := by
 公理 2.4
 
 对于不同的自然数而言，紧跟在它们之后的数字也一定是不同的。
-也就是说，如果{lit}`n`和{lit}`m`都是自然数，并且{lit}`n ≠ m`，那么{lit}`n++ ≠ m++`。
-等价说法为，如果{lit}`n++ = m++`，那么一定有{lit}`n = m`。
+也就是说，如果`n`和`m`都是自然数，并且`n ≠ m`，那么`n++ ≠ m++`。
+等价说法为，如果`n++ = m++`，那么一定有`n = m`。
 -/
 theorem Nat.succ_ne_succ (n m : Nat) : n ≠ m → n++ ≠ m++ := by
   intro h
@@ -96,7 +96,7 @@ theorem Nat.succ_ne_succ (n m : Nat) : n ≠ m → n++ ≠ m++ := by
 /--
 命题 2.1.8
 
-{lit}`6`不等于{lit}`2`
+`6`不等于`2`
 -/
 theorem Nat.six_ne_two : (6 : Nat) ≠ 2 := by
   by_contra h
@@ -110,7 +110,7 @@ theorem Nat.six_ne_two : (6 : Nat) ≠ 2 := by
 /--
 命题 2.1.8
 
-{lit}`6`不等于{lit}`2`
+`6`不等于`2`
 -/
 theorem Nat.six_ne_two' : (6 : Nat) ≠ 2 := by
   decide
@@ -118,8 +118,8 @@ theorem Nat.six_ne_two' : (6 : Nat) ≠ 2 := by
 /--
 公理 2.5 数学归纳原理
 
-令{lit}`P(n)`表示自然数{lit}`n`的任意一个性质，如果{lit}`P(0)`为真且{lit}`P(n)`为真时一定有{lit}`P(n++)`也为真，
-那么对于任意自然数{lit}`n`，{lit}`P(n)`一定为真。
+令`P(n)`表示自然数`n`的任意一个性质，如果`P(0)`为真且`P(n)`为真时一定有`P(n++)`也为真，
+那么对于任意自然数`n`，`P(n)`一定为真。
 -/
 theorem Nat.induction (P : Nat → Prop) (hbase : P 0) (hind : ∀ n, P n → P (n++)) :
     ∀ n, P n := by
@@ -128,7 +128,7 @@ theorem Nat.induction (P : Nat → Prop) (hbase : P 0) (hind : ∀ n, P n → P 
   | zero => exact hbase
   | succ n ih => exact hind _ ih
 
-/-- {lit}`recurse f c`给出一个数列{lit}`aₙ`，满足{lit}`a₀ = c`且{lit}`a_{n++} = fₙ(aₙ)` -/
+/-- `recurse f c`给出一个数列`aₙ`，满足`a₀ = c`且`a_{n++} = fₙ(aₙ)` -/
 abbrev Nat.recurse (f : Nat → Nat → Nat) (c : Nat) : Nat → Nat := fun n ↦ match n with
 | 0 => c
 | n++ => f n (recurse f c n)
@@ -136,16 +136,16 @@ abbrev Nat.recurse (f : Nat → Nat → Nat) (c : Nat) : Nat → Nat := fun n �
 /--
 命题 2.16 递归定义
 
-假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
-那么对任意自然数{lit}`n`，都能够确定唯一的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
+假设对任意自然数`n`，都存在某个从自然数系到自然数系的函数`fₙ : ℕ → ℕ`，令`c`为某个固定的自然数。
+那么对任意自然数`n`，都能够确定唯一的自然数`aₙ`，使得`a₀ = c`以及`a_{n++} = fₙ(aₙ)`恒成立。
 -/
 theorem Nat.recurse_zero (f : Nat → Nat → Nat) (c : Nat) : Nat.recurse f c 0 = c := by rfl
 
 /--
 命题 2.16 递归定义
 
-假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
-那么对任意自然数{lit}`n`，都能够确定唯一的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
+假设对任意自然数`n`，都存在某个从自然数系到自然数系的函数`fₙ : ℕ → ℕ`，令`c`为某个固定的自然数。
+那么对任意自然数`n`，都能够确定唯一的自然数`aₙ`，使得`a₀ = c`以及`a_{n++} = fₙ(aₙ)`恒成立。
 -/
 theorem Nat.recurse_succ (f : Nat → Nat → Nat) (c : Nat) (n : Nat) :
     Nat.recurse f c (n++) = f n (recurse f c n) := by rfl
@@ -153,8 +153,8 @@ theorem Nat.recurse_succ (f : Nat → Nat → Nat) (c : Nat) (n : Nat) :
 /--
 命题 2.16 递归定义
 
-假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
-那么对任意自然数{lit}`n`，都能够确定唯一的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
+假设对任意自然数`n`，都存在某个从自然数系到自然数系的函数`fₙ : ℕ → ℕ`，令`c`为某个固定的自然数。
+那么对任意自然数`n`，都能够确定唯一的自然数`aₙ`，使得`a₀ = c`以及`a_{n++} = fₙ(aₙ)`恒成立。
 -/
 theorem Nat.eq_recurse (f : Nat → Nat → Nat) (c : Nat) (a : Nat → Nat) :
     (a 0 = c ∧ ∀ n, a (n++) = f n (a n)) ↔ a = recurse f c := by
@@ -173,8 +173,8 @@ theorem Nat.eq_recurse (f : Nat → Nat → Nat) (c : Nat) (a : Nat → Nat) :
 /--
 命题 2.16 递归定义
 
-假设对任意自然数{lit}`n`，都存在某个从自然数系到自然数系的函数{lit}`fₙ : ℕ → ℕ`，令{lit}`c`为某个固定的自然数。
-那么对任意自然数{lit}`n`，都能够确定**唯一**的自然数{lit}`aₙ`，使得{lit}`a₀ = c`以及{lit}`a_{n++} = fₙ(aₙ)`恒成立。
+假设对任意自然数`n`，都存在某个从自然数系到自然数系的函数`fₙ : ℕ → ℕ`，令`c`为某个固定的自然数。
+那么对任意自然数`n`，都能够确定**唯一**的自然数`aₙ`，使得`a₀ = c`以及`a_{n++} = fₙ(aₙ)`恒成立。
 -/
 theorem Nat.recurse_uniq (f : Nat → Nat → Nat) (c : Nat) :
     ∃! (a : Nat → Nat), a 0 = c ∧ ∀ n, a (n++) = f n (a n) := by

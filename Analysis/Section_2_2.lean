@@ -6,8 +6,8 @@ namespace Chapter2
 /--
 定义 2.2.1 自然数的加法
 
-令{lit}`m`为一个自然数，我们定义{lit}`m`加上{lit}`0`为{lit}`0 + m := m`。
-现在递归地假设我们已经定义了如何把{lit}`m`加上{lit}`n`，那么我们把{lit}`m`加上{lit}`n++`定义为{lit}`(n++) + m := (n + m)++`。
+令`m`为一个自然数，我们定义`m`加上`0`为`0 + m := m`。
+现在递归地假设我们已经定义了如何把`m`加上`n`，那么我们把`m`加上`n++`定义为`(n++) + m := (n + m)++`。
 -/
 abbrev Nat.add (n m : Nat) : Nat := Nat.recurse (fun _ sum ↦ sum++) m n
 
@@ -33,7 +33,7 @@ example : (2 : Nat) + 3 = 5 := by
 /--
 引理 2.2.2
 
-对任意的自然数{lit}`n`, {lit}`n + 0 = n`恒成立
+对任意的自然数`n`, `n + 0 = n`恒成立
 -/
 @[simp]
 lemma Nat.add_zero (n : Nat) : n + 0 = n := by
@@ -47,7 +47,7 @@ lemma Nat.add_zero (n : Nat) : n + 0 = n := by
 /--
 引理 2.2.3
 
-对任意的自然数{lit}`n`和{lit}`m`，有{lit}`n + (m++) = (n + m)++`成立。
+对任意的自然数`n`和`m`，有`n + (m++) = (n + m)++`成立。
 -/
 lemma Nat.add_succ (n m : Nat) : n + (m++) = (n + m)++ := by
   revert n; apply induction
@@ -66,7 +66,7 @@ theorem Nat.succ_eq_add_one (n : Nat) : n++ = n + 1 := by
 /--
 命题 2.2.4 加法是可交换的
 
-对任意的自然数{lit}`n`和{lit}`m`，有{lit}`n + m = m + n`成立。
+对任意的自然数`n`和`m`，有`n + m = m + n`成立。
 -/
 theorem Nat.add_comm (n m : Nat) : n + m = m + n := by
   revert n; apply induction
@@ -78,7 +78,7 @@ theorem Nat.add_comm (n m : Nat) : n + m = m + n := by
 /--
 命题 2.2.5 加法是可结合的
 
-对任意的自然数{lit}`a、b、c`，有{lit}`(a + b) + c = a + (b + c)`成立。
+对任意的自然数`a、b、c`，有`(a + b) + c = a + (b + c)`成立。
 -/
 theorem Nat.add_assoc (a b c : Nat) : (a + b) + c = a + (b + c) := by
   revert a; apply induction
@@ -89,7 +89,7 @@ theorem Nat.add_assoc (a b c : Nat) : (a + b) + c = a + (b + c) := by
 /--
 命题 2.2.6 消去律
 
-令{lit}`a、b、c`为任意三个自然数且满足{lit}`a + b = a + c`，那么{lit}`b = c`成立。
+令`a、b、c`为任意三个自然数且满足`a + b = a + c`，那么`b = c`成立。
 -/
 theorem Nat.add_left_cancel (a b c : Nat) (habc : a + b = a + c) : b = c := by
   revert a; apply induction
@@ -112,7 +112,7 @@ example (a b c d : Nat) : (a + b) + (c + 0 + d) = (b + c) + (d + a) := by abel
 /--
 定义 2.2.7 正自然数
 
-称一个自然数{lit}`n`是正的，当且仅当它不等于{lit}`0`
+称一个自然数`n`是正的，当且仅当它不等于`0`
 -/
 def Nat.IsPos (n : Nat) : Prop := n ≠ 0
 
@@ -121,7 +121,7 @@ theorem Nat.isPos_iff (n : Nat) : n.IsPos ↔ n ≠ 0 := by rfl
 /--
 命题 2.2.8
 
-如果{lit}`a`是正的并且{lit}`b`是自然数，那么{lit}`a + b`是正的
+如果`a`是正的并且`b`是自然数，那么`a + b`是正的
 -/
 theorem Nat.add_pos_left {a : Nat} (b : Nat) (ha : a.IsPos) : (a + b).IsPos := by
   revert b; apply induction
@@ -134,7 +134,7 @@ theorem Nat.add_pos_left {a : Nat} (b : Nat) (ha : a.IsPos) : (a + b).IsPos := b
 /--
 命题 2.2.8
 
-如果{lit}`a`是正的并且{lit}`b`是自然数，那么{lit}`b + a`是正的
+如果`a`是正的并且`b`是自然数，那么`b + a`是正的
 -/
 theorem Nat.add_pos_right {a : Nat} (b : Nat) (ha : a.IsPos) : (b + a).IsPos := by
   grind [add_comm, add_pos_left]
@@ -142,7 +142,7 @@ theorem Nat.add_pos_right {a : Nat} (b : Nat) (ha : a.IsPos) : (b + a).IsPos := 
 /--
 推论 2.2.9
 
-如果{lit}`a`和{lit}`b`是自然数并且满足{lit}`a + b = 0`，那么{lit}`a = 0`且{lit}`b = 0`
+如果`a`和`b`是自然数并且满足`a + b = 0`，那么`a = 0`且`b = 0`
 -/
 theorem Nat.add_eq_zero (a b : Nat) (hab : a + b = 0) : a = 0 ∧ b = 0 := by
   by_contra h
@@ -165,7 +165,7 @@ theorem Nat.add_eq_zero (a b : Nat) (hab : a + b = 0) : a = 0 ∧ b = 0 := by
 /--
 引理 2.2.10
 
-令{lit}`a`表示一个正自然数，那么恰存在一个自然数{lit}`b`使得{lit}`b++ = a`
+令`a`表示一个正自然数，那么恰存在一个自然数`b`使得`b++ = a`
 -/
 lemma Nat.uniq_succ_eq (a : Nat) (ha : a.IsPos) : ∃! b, b++ = a := by
   have h : ∃ x, x++ = a := by
@@ -184,7 +184,7 @@ lemma Nat.uniq_succ_eq (a : Nat) (ha : a.IsPos) : ∃! b, b++ = a := by
 /--
 定义 2.2.11 自然数的排序
 
-令{lit}`n`和{lit}`m`表示任意两个自然数。我们称{lit}`n`大于等于{lit}`m`，并且记作{lit}`n ≥ m`或者{lit}`m ≤ n`，当且仅当存在自然数{lit}`a`使得{lit}`n = m + a`。
+令`n`和`m`表示任意两个自然数。我们称`n`大于等于`m`，并且记作`n ≥ m`或者`m ≤ n`，当且仅当存在自然数`a`使得`n = m + a`。
 -/
 instance Nat.instLE : LE Nat where
   le m n := ∃ a : Nat, n = m + a
@@ -193,7 +193,7 @@ instance Nat.instLE : LE Nat where
 /--
 定义 2.2.11 自然数的排序
 
-令{lit}`n`和{lit}`m`表示任意两个自然数。我们称{lit}`n`严格大于{lit}`m`，并且记作{lit}`n > m`或者{lit}`m < n`，当且仅当{lit}`n ≥ m`且{lit}`n ≠ m`。
+令`n`和`m`表示任意两个自然数。我们称`n`严格大于`m`，并且记作`n > m`或者`m < n`，当且仅当`n ≥ m`且`n ≠ m`。
 -/
 instance Nat.instLT : LT Nat where
   lt m n := m ≤ n ∧ m ≠ n
@@ -239,13 +239,13 @@ theorem Nat.succ_gt_self (n : Nat) : n++ > n := by
 /-
 命题 2.2.12 自然数的序的基本性质
 
-令{lit}`a`、{lit}`b`、{lit}`c`为任意自然数，那么
-- {lit}`a ≥ a`
-- 如果{lit}`a ≥ b`并且{lit}`b ≥ c`，那么{lit}`a ≥ c`
-- 如果{lit}`a ≥ b`并且{lit}`b ≥ a`，那么{lit}`a = b`
-- {lit}`a ≥ b`当且仅当{lit}`a + c ≥ b + c`
-- {lit}`a < b`当且仅当{lit}`a++ ≤ b`
-- {lit}`a < b`当且仅当存在正自然数{lit}`d`使得{lit}`b = a + d`
+令`a`、`b`、`c`为任意自然数，那么
+- `a ≥ a`
+- 如果`a ≥ b`并且`b ≥ c`，那么`a ≥ c`
+- 如果`a ≥ b`并且`b ≥ a`，那么`a = b`
+- `a ≥ b`当且仅当`a + c ≥ b + c`
+- `a < b`当且仅当`a++ ≤ b`
+- `a < b`当且仅当存在正自然数`d`使得`b = a + d`
 -/
 
 theorem Nat.ge_refl (a : Nat) : a ≥ a := by
@@ -255,7 +255,7 @@ theorem Nat.ge_refl (a : Nat) : a ≥ a := by
 @[refl]
 theorem Nat.le_refl (a : Nat) : a ≤ a := a.ge_refl
 
-/-- {lit}`refl`标签使得{tactic}`rfl`可以适用于不等式 -/
+/-- `refl`标签使得{tactic}`rfl`可以适用于不等式 -/
 example (a b : Nat) : a + b ≥ a + b := by rfl
 
 theorem Nat.ge_trans {a b c : Nat} (hab : a ≥ b) (hbc : b ≥ c) : a ≥ c := by
@@ -292,6 +292,20 @@ theorem Nat.add_le_add_right (a b c : Nat) : a ≤ b ↔ a + c ≤ b + c := add_
 
 theorem Nat.add_le_add_left (a b c : Nat) : a ≤ b ↔ c + a ≤ c + b := add_ge_add_left _ _ _
 
+section helpers
+-- 一些有用的引理
+lemma Nat.le_succ {a : Nat} : a ≤ a++ := by
+  use 1
+  exact succ_eq_add_one a
+
+lemma Nat.succ_ne_self (a : Nat) : a++ ≠ a := by
+  rw [succ_eq_add_one]
+  nth_rw 2 [← add_zero a]
+  by_contra h
+  apply add_left_cancel at h
+  contradiction
+end helpers
+
 theorem Nat.lt_iff_succ_le (a b : Nat) : a < b ↔ a++ ≤ b := by
   constructor
   · rintro ⟨⟨x, hx⟩, hne⟩
@@ -304,17 +318,12 @@ theorem Nat.lt_iff_succ_le (a b : Nat) : a < b ↔ a++ ≤ b := by
     use y
     rwa [succ_add, add_comm, ← succ_add, hy, add_comm]
   · intro h
-    have le_succ : a ≤ a++ := by
-        use 1
-        exact succ_eq_add_one a
     constructor
     · exact le_trans le_succ h
     · by_contra heq
       rw [← heq] at h
-      have := ge_antisymm h le_succ
-      rw [succ_eq_add_one] at this
-      nth_rw 1 [← add_zero a] at this
-      apply add_left_cancel at this
+      have h1 := ge_antisymm h le_succ
+      have h2 := (succ_ne_self a).symm
       contradiction
 
 theorem Nat.lt_iff_add_pos (a b : Nat) : a < b ↔ ∃ d : Nat, d.IsPos ∧ b = a + d := by
@@ -370,7 +379,7 @@ theorem Nat.zero_le (a : Nat) : 0 ≤ a := by
 /--
 命题 2.2.13 自然数的序的三歧性
 
-令{lit}`a`和{lit}`b`表示任意两个自然数，那么在下面三种表述中恰有一种表述为真：{lit}`a < b`，{lit}`a = b`，{lit}`a > b`
+令`a`和`b`表示任意两个自然数，那么在下面三种表述中恰有一种表述为真：`a < b`，`a = b`，`a > b`
 -/
 theorem Nat.trichotomous (a b : Nat) : a < b ∨ a = b ∨ a > b := by
   revert a; apply induction
@@ -389,10 +398,94 @@ theorem Nat.trichotomous (a b : Nat) : a < b ∨ a = b ∨ a > b := by
   have why : a++ > b := by
     rw [gt_iff_lt, lt_iff_succ_le]
     rw [gt_iff_lt, lt_iff_succ_le] at case3
-    have le_succ : a ≤ a++ := by
-      use 1
-      exact succ_eq_add_one a
     exact le_trans case3 le_succ
   tauto
+
+def Nat.decLe : (a b : Nat) → Decidable (a ≤ b)
+  | 0, b => by
+    apply isTrue
+    use b
+    rw [zero_add]
+  | a++, b => by
+    cases decLe a b with
+    | isTrue hle =>
+      cases decEq a b with
+      | isTrue h =>
+        apply isFalse
+        rw [h]
+        by_contra succ_le
+        have h1 := ge_antisymm succ_le le_succ
+        have h2 := (succ_ne_self b).symm
+        contradiction
+      | isFalse h =>
+        apply isTrue
+        rw [← lt_iff_succ_le]
+        exact ⟨hle, h⟩
+    | isFalse h =>
+      apply isFalse
+      by_contra h
+      have := le_trans le_succ h
+      contradiction
+
+instance Nat.decidableRel : DecidableRel (· ≤ · : Nat → Nat → Prop) := Nat.decLe
+
+instance Nat.instLinearOrder : LinearOrder Nat where
+  le_refl := ge_refl
+  le_trans _ _ _ := le_trans
+  lt_iff_le_not_ge a b := by
+    constructor
+    · intro h; refine ⟨le_of_lt h, ?_⟩
+      by_contra h'
+      exact not_lt_self (lt_of_le_of_lt h' h)
+    rintro ⟨h1, h2⟩
+    rw [lt_iff, ← le_iff]; refine ⟨h1, ?_⟩
+    by_contra h
+    subst h
+    contradiction
+  le_antisymm _ _ hab hba := ge_antisymm hba hab
+  le_total a b := by
+    obtain h | rfl | h := trichotomous a b
+    · left; exact le_of_lt h
+    · simp [ge_refl]
+    · right; exact le_of_lt h
+  toDecidableLE := decidableRel
+
+example (a b c d : Nat) (hab : a ≤ b) (hbc : b ≤ c) (hcd : c ≤ d) (hda : d ≤ a) : a = c := by order
+example (a b c d e : Nat) (hab : a ≤ b) (hbc : b < c) (hcd : c ≤ d) (hde : d ≤ e) : a + 0 < e := by
+  calc
+    a + 0 = a := by simp
+        _ ≤ b := hab
+        _ < c := hbc
+        _ ≤ d := hcd
+        _ ≤ e := hde
+
+instance Nat.isOrderedAddMonoid : IsOrderedAddMonoid Nat where
+  add_le_add_left a b hab c := (add_le_add_right a b c).mp hab
+
+example (a b c d e : Nat) (hab : a ≤ b) (hbc : b < c) (hde : d < e) : a + d ≤ c + e := by
+  gcongr
+  order
+
+/--
+命题 2.2.14 强归纳法原理
+
+令`m₀`表示一个自然数，`P(m)`表示与任意自然数`m`有关的性质。假设对任意满足`m ≥ m₀`的自然数`m`，均有如下内容成立：
+若`P(m')`对任意满足`m₀ ≤ m' < m`的自然数`m'`均为真，那么`P(m)`也为真。
+（特别地，这意味着`P(m₀)`为真，因为当`m = m₀`时，前提中的`m'`取值范围为空。）
+于是我们能够断定，对于任意满足`m ≥ m₀`的自然数`m`，`P(m)`为真。
+-/
+theorem Nat.strong_induction {m₀ : Nat} {P : Nat → Prop}
+  (hind : ∀ m, m ≥ m₀ → (∀ m', m₀ ≤ m' ∧ m' < m → P m') → P m) :
+    ∀ m, m ≥ m₀ → P m := by
+  -- hind : ∀ m, m ≥ m₀, Q m → P m
+  let Q : Nat → Prop := fun m ↦ ∀ m', m₀ ≤ m' ∧ m' < m → P m'
+  apply induction
+  · intro h
+    apply hind 0 h
+    intro m ⟨hm1, hm2⟩
+    absurd hm2
+    push Not
+    exact zero_le m
+  · sorry
 
 end Chapter2
