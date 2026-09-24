@@ -474,18 +474,77 @@ example (a b c d e : Nat) (hab : a ≤ b) (hbc : b < c) (hde : d < e) : a + d �
 （特别地，这意味着`P(m₀)`为真，因为当`m = m₀`时，前提中的`m'`取值范围为空。）
 于是我们能够断定，对于任意满足`m ≥ m₀`的自然数`m`，`P(m)`为真。
 -/
-theorem Nat.strong_induction {m₀ : Nat} {P : Nat → Prop}
-  (hind : ∀ m, m ≥ m₀ → (∀ m', m₀ ≤ m' ∧ m' < m → P m') → P m) :
+theorem Nat.strong_induction {m₀:Nat} {P: Nat → Prop}
+  (hind: ∀ m, m ≥ m₀ → (∀ m', m₀ ≤ m' ∧ m' < m → P m') → P m) :
     ∀ m, m ≥ m₀ → P m := by
-  -- hind : ∀ m, m ≥ m₀, Q m → P m
-  let Q : Nat → Prop := fun m ↦ ∀ m', m₀ ≤ m' ∧ m' < m → P m'
-  apply induction
-  · intro h
-    apply hind 0 h
-    intro m ⟨hm1, hm2⟩
-    absurd hm2
-    push Not
-    exact zero_le m
-  · sorry
+  intro m hm
+  let Q := fun n ↦ ∀ m', m₀ ≤ m' ∧ m' < n → P m'
+  have Q' : ∀ n, Q n := by
+    intro n
+    apply induction Q
+    · intro x ⟨_, h⟩
+      absurd h; simp
+      use x; simp
+    · intro n hn x ⟨h1, h2⟩
+      apply hind _ h1
+      intro y ⟨hy, _⟩
+      apply hn
+      have : y < n := by
+        rw [lt_iff_succ_le, succ_eq_add_one, succ_eq_add_one, ← add_le_add_right] at h2
+        order
+      exact ⟨hy, this⟩
+  exact hind m hm (Q' m)
+
+/--
+习题 2.2.6 逆向归纳法原理
+
+令`n`表示一个自然数，令`P(m)`是关于自然数的一个性质并且满足：只要`P(m++)`为真，`P(m)`就为真。
+假设`P(n)`也为真，证明：`P(m)`对任意满足`m ≤ n`的自然数`m`均为真。
+-/
+theorem Nat.backwards_induction {n : Nat} {P : Nat → Prop}
+  (hind : ∀ m, P (m++) → P m) (hn : P n) :
+    ∀ m, m ≤ n → P m := by
+  induction n with
+  | zero =>
+    intro _ ⟨_, hx⟩
+    rwa [(add_eq_zero _ _ hx.symm).1]
+  | succ n ih =>
+    intro m hm
+    have := ih (hind _ hn)
+    by_cases h : m ≤ n
+    · exact this _ h
+    · have : m = n++ := by
+        rw [le_iff_lt_or_eq] at hm
+        obtain h' | h' := hm
+        · rw [lt_iff_succ_le, succ_eq_add_one, succ_eq_add_one, ← add_le_add_right] at h'
+          contradiction
+        · exact h'
+      rwa [this]
+
+/--
+习题 2.2.7 从指定的起点归纳
+-/
+theorem Nat.induction_from {n : Nat} {P : Nat → Prop} (hind : ∀ m, P m → P (m++)) :
+    P n → ∀ m, m ≥ n → P m := by
+  induction n with
+  | zero =>
+    intro P0 _ _
+    exact induction _ P0 hind _
+  | succ n ih =>
+    intro h m hm
+    induction m with
+    | zero =>
+      absurd hm
+      push Not
+      rw [lt_iff_succ_le, succ_eq_add_one, succ_eq_add_one, ← add_le_add_right]
+      use n
+      exact zero_add n
+    | succ m ih' =>
+      by_cases h' : n < m
+      · rw [lt_iff_succ_le] at h'
+        exact hind _ (ih' h')
+      · push Not at h'
+        rw [succ_eq_add_one, succ_eq_add_one, ← add_ge_add_right] at hm
+        rwa [ge_antisymm hm h']
 
 end Chapter2
