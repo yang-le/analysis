@@ -504,47 +504,40 @@ theorem Nat.strong_induction {m₀:Nat} {P: Nat → Prop}
 theorem Nat.backwards_induction {n : Nat} {P : Nat → Prop}
   (hind : ∀ m, P (m++) → P m) (hn : P n) :
     ∀ m, m ≤ n → P m := by
-  induction n with
-  | zero =>
-    intro _ ⟨_, hx⟩
-    rwa [(add_eq_zero _ _ hx.symm).1]
-  | succ n ih =>
-    intro m hm
-    have := ih (hind _ hn)
-    by_cases h : m ≤ n
-    · exact this _ h
-    · have : m = n++ := by
-        rw [le_iff_lt_or_eq] at hm
-        obtain h' | h' := hm
-        · rw [lt_iff_succ_le, succ_eq_add_one, succ_eq_add_one, ← add_le_add_right] at h'
-          contradiction
-        · exact h'
-      rwa [this]
+  let Q := fun n ↦ P n → ∀ m, m ≤ n → P m
+  have Q' : ∀ n, Q n := by
+    intro n
+    apply induction
+    · intro _ m hm
+      have : m ≥ 0 := by use m; simp
+      rwa [ge_antisymm this hm]
+    · intro k hk1 hk2 x hx
+      by_cases h : x ≤ k
+      · exact hk1 (hind _ hk2) _ h
+      · have : x = k++ := by
+          rw [le_iff_lt_or_eq] at hx
+          obtain h' | h' := hx
+          · rw [lt_iff_succ_le, succ_eq_add_one, succ_eq_add_one, ← add_le_add_right] at h'
+            contradiction
+          · exact h'
+        rwa [this]
+  exact Q' n hn
 
 /--
 习题 2.2.7 从指定的起点归纳
 -/
 theorem Nat.induction_from {n : Nat} {P : Nat → Prop} (hind : ∀ m, P m → P (m++)) :
     P n → ∀ m, m ≥ n → P m := by
-  induction n with
-  | zero =>
-    intro P0 _ _
-    exact induction _ P0 hind _
-  | succ n ih =>
-    intro h m hm
-    induction m with
-    | zero =>
-      absurd hm
-      push Not
-      rw [lt_iff_succ_le, succ_eq_add_one, succ_eq_add_one, ← add_le_add_right]
-      use n
-      exact zero_add n
-    | succ m ih' =>
-      by_cases h' : n < m
-      · rw [lt_iff_succ_le] at h'
-        exact hind _ (ih' h')
-      · push Not at h'
-        rw [succ_eq_add_one, succ_eq_add_one, ← add_ge_add_right] at hm
-        rwa [ge_antisymm hm h']
+  intro hn m hm
+  obtain ⟨k, rfl⟩ := hm
+  let Q := fun k ↦ P n → P (n + k)
+  have Q' : ∀ k, Q k := by
+    intro k
+    apply induction
+    · intro h; simpa
+    · intro _ hm hn
+      rw [add_succ]
+      exact hind _ (hm hn)
+  exact Q' k hn
 
 end Chapter2
