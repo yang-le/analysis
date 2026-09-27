@@ -216,6 +216,27 @@ theorem Equiv.uniq {P Q : PeanoAxioms} (equiv1 equiv2 : PeanoAxioms.Equiv P Q) :
 -/
 theorem Nat.recurse_uniq {P : PeanoAxioms} (f : P.Nat → P.Nat → P.Nat) (c : P.Nat) :
     ∃! (a : P.Nat → P.Nat), a P.zero = c ∧ ∀ n, a (P.succ n) = f n (a n) := by
-  sorry
+  let equiv := Equiv.mk' P Chapter2_Nat
+  let e := equiv.equiv
+  let f' : Chapter2.Nat → Chapter2.Nat → Chapter2.Nat := fun x y ↦ e (f (e.symm x) (e.symm y))
+  rcases Chapter2.Nat.recurse_uniq f' (e c) with ⟨a', ⟨h1, h2⟩, _⟩
+  use fun x ↦ e.symm (a' (e x)); dsimp
+
+  have hzero : Chapter2_Nat.zero = (0 : Chapter2.Nat) := rfl
+  have hsucc : ∀ n, Chapter2_Nat.succ (Equiv.equiv n) = (e n)++ := by intro n; rfl
+  constructor
+  · constructor
+    · rw [equiv.equiv_zero, hzero, h1]
+      simp
+    · intro n
+      rw [equiv.equiv_succ, hsucc, h2 (e n)]
+      grind
+  · intro y ⟨hy1, hy2⟩
+    ext x; revert x; apply P.induction
+    · rw [hy1, equiv.equiv_zero, hzero, h1]
+      simp
+    · intro n hn
+      rw [hy2 n, hn, equiv.equiv_succ, hsucc, h2 (e n)]
+      grind
 
 end PeanoAxioms
