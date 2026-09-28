@@ -505,4 +505,318 @@ instance SetTheory.Set.instIntersection : Inter Set where
 
 example (X Y : Set) : X ∩ Y = X.specify (fun x ↦ x.val ∈ Y) := rfl
 
+/--
+定义 3.1.23 交集
+
+两个集合的交集`S₁ ∩ S₂`被定义为下面这样一个集合
+`S₁ ∩ S₂ := {x ∈ S₁ : x ∈ S₂}`
+即`S₁ ∩ S₂`是由所有同时属于`S₁`和`S₂`的元素构成的。于是对任意的对象`x`，
+`x ∈ S₁ ∩ S₂ ↔ x ∈ S₁ ∧ x ∈ S₂`
+-/
+@[simp]
+theorem SetTheory.Set.mem_inter (x : Object) (X Y : Set) : x ∈ (X ∩ Y) ↔ (x ∈ X ∧ x ∈ Y) := by
+  constructor
+  · intro h; have h' := specification_axiom h; simp [h']
+    exact (specification_axiom' _ ⟨x, h'⟩).mp h
+  intro ⟨hX, hY⟩; exact (specification_axiom' (fun x ↦ x.val ∈ Y) ⟨x, hX⟩).mpr hY
+
+instance SetTheory.Set.instSDiff : SDiff Set where
+  sdiff X Y := X.specify (fun x ↦ x.val ∉ Y)
+
+example (X Y : Set) : X \ Y = X.specify (fun x ↦ x.val ∉ Y) := rfl
+
+/--
+定义 3.1.27 差集
+
+给定两个集合`A`和`B`，我们定义集合`A - B`或`A \ B`是由`A`中所有不属于`B`的元素组成的集合。
+`A \ B := {x ∈ A : x ∉ B}`
+在很多情况下，`B`是`A`的一个子集，但并非必须如此。
+-/
+@[simp]
+theorem SetTheory.Set.mem_sdiff (x : Object) (X Y : Set) : x ∈ (X \ Y) ↔ (x ∈ X ∧ x ∉ Y) := by
+  constructor
+  · intro h; have h' := specification_axiom h; simp [h']
+    exact (specification_axiom' _ ⟨x, h'⟩).mp h
+  intro ⟨hX, hY⟩; exact (specification_axiom' (fun x ↦ x.val ∉ Y) ⟨x, hX⟩).mpr hY
+
+/--
+命题 3.1.27 (d) 交换律
+-/
+theorem SetTheory.Set.inter_comm (A B : Set) : A ∩ B = B ∩ A := by
+  ext; simp
+  exact ⟨fun ⟨x, y⟩ ↦ ⟨y, x⟩, fun ⟨x, y⟩ ↦ ⟨y, x⟩⟩
+
+/--
+命题 3.1.27 (b) 最大元
+-/
+theorem SetTheory.Set.subset_union {A X : Set} (hAx : A ⊆ X) : A ∪ X = X := by
+  ext; simp
+  exact fun x ↦ hAx _ x
+
+/--
+命题 3.1.27 (b) 最大元
+-/
+theorem SetTheory.Set.union_subset {A X : Set} (hAx : A ⊆ X) : X ∪ A = X := by
+  ext; simp
+  exact fun x ↦ hAx _ x
+
+/--
+命题 3.1.27 (c) 幂等律
+-/
+@[simp]
+theorem SetTheory.Set.inter_self (A : Set) : A ∩ A = A := by ext; simp
+
+/--
+命题 3.1.27 (e) 结合律
+-/
+theorem SetTheroy.Set.inter_assoc (A B C : Set) : (A ∩ B) ∩ C = A ∩ (B ∩ C) := by
+  ext; simp
+  exact ⟨fun ⟨⟨x, y⟩, z⟩ ↦ ⟨x, ⟨y, z⟩⟩, fun ⟨x, ⟨y, z⟩⟩ ↦ ⟨⟨x, y⟩, z⟩⟩
+
+/--
+命题 3.1.27 (f) 分配律
+-/
+theorem SetTheory.Set.inter_union_distrib_left (A B C : Set) :
+    A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) := by
+  ext; simp
+  constructor
+  · rintro ⟨h1, h2 | h2⟩
+    exact Or.inl ⟨h1, h2⟩
+    exact Or.inr ⟨h1, h2⟩
+  · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
+    exact ⟨h1, Or.inl h2⟩
+    exact ⟨h1, Or.inr h2⟩
+
+/--
+命题 3.1.27 (f) 分配律
+-/
+theorem SetTheory.Set.union_inter_distrib_left (A B C : Set) :
+    A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C) := by
+  ext; simp
+  constructor
+  · rintro (h1 | ⟨h2, h3⟩)
+    exact ⟨Or.inl h1, Or.inl h1⟩
+    exact ⟨Or.inr h2, Or.inr h3⟩
+  · rintro ⟨h1 | h1, h2 | h2⟩
+    exact Or.inl h1
+    exact Or.inl h1
+    exact Or.inl h2
+    exact Or.inr ⟨h1, h2⟩
+
+/--
+命题 3.1.27 (g) 拆分法
+-/
+theorem SetTheory.Set.union_compl {A X : Set} (hAX : A ⊆ X) : A ∪ (X \ A) = X := by
+  ext x; simp
+  constructor
+  · rintro (h | ⟨_, _⟩)
+    exact hAX _ h
+    assumption
+  · intro h
+    by_cases hA : x ∈ A
+    exact Or.inl hA
+    exact Or.inr ⟨h, hA⟩
+
+/--
+命题 3.1.27 (g) 拆分法
+-/
+theorem SetTheory.Set.inter_compl {A X : Set} : A ∩ (X \ A) = ∅ := by
+  ext; simp
+  exact fun x _ ↦ x
+
+/--
+命题 3.1.27 (h) 德·摩根定律
+-/
+theorem SetTheory.Set.compl_union {A B X : Set} : X \ (A ∪ B) = (X \ A) ∩ (X \ B) := by
+  ext; simp
+  exact ⟨fun ⟨x, y, z⟩ ↦ ⟨⟨x, y⟩, x, z⟩, fun ⟨⟨_, x⟩, y, z⟩ ↦ ⟨y, x, z⟩⟩
+
+theorem SetTheory.Set.compl_inter {A B X : Set} : X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by
+  ext x; simp
+  constructor
+  · rintro ⟨h1, h2⟩
+    by_cases h : x ∈ A
+    exact Or.inr ⟨h1, h2 h⟩
+    exact Or.inl ⟨h1, h⟩
+  rintro (⟨h1, h2⟩ | ⟨h1, h2⟩) <;> simp [h1, h2]
+
+instance SetTheory.Set.instDistribLattice : DistribLattice Set where
+  le := (· ⊆ ·)
+  le_refl := subset_self
+  le_trans := fun _ _ _ ↦ subset_trans
+  le_antisymm := subset_antisymm
+  inf := (· ∩ ·)
+  sup := (· ∪ ·)
+  le_sup_left := by intro _ _ _; simp; exact Or.inl
+  le_sup_right := by intro _ _ _; simp; exact Or.inr
+  sup_le := by
+    intro _ _ _ hac hbc _; simp
+    rintro (hxa | hxa)
+    exact hac _ hxa
+    exact hbc _ hxa
+  inf_le_left := by intro _ _ _; simp; exact fun x _ ↦ x
+  inf_le_right := by intro _ _ _; simp
+  le_inf := by
+    intro _ _ _ hac hbc _; simp;
+    exact fun x ↦ ⟨hac _ x, hbc _ x⟩
+  le_sup_inf := by
+    intro X Y Z; change (X ∪ Y) ∩ (X ∪ Z) ⊆ X ∪ (Y ∩ Z)
+    rw [← union_inter_distrib_left]
+
+instance SetTheory.Set.instOrderBot : OrderBot Set where
+  bot := ∅
+  bot_le := empty_subset
+
+example (A B : Set) : (A ≤ B) ↔ (A ⊆ B) := by rfl
+example : ⊥ = (∅ : Set) := by rfl
+example (A B : Set) : Prop := Disjoint A B
+
+theorem SetTheory.Set.disjoint_iff (A B : Set) : Disjoint A B ↔ A ∩ B = ∅ := by
+  convert _root_.disjoint_iff
+
+abbrev SetTheory.Set.replace (A : Set) {P : A → Object → Prop}
+  (hP : ∀ x y y', P x y ∧ P x y' → y = y') : Set := SetTheory.replace A P hP
+
+/--
+公理 3.6 替代公理
+
+设`A`是一个集合，对任意的`x ∈ A`和任意的一个对象`y`，
+假设存在一个关于`x`和`y`的命题`P(x, y)`使得对任意的`x ∈ A`，最多能够找到一个`y`使得`P(x, y)`为真。
+那么存在一个集合`{y : ∃ x ∈ A, P(x, y)}`使得对任意的对象`z`
+`z ∈ {y : ∃ x ∈ A, P(x, y)} ↔ ∃ x ∈ A, P(x, z)`
+-/
+@[simp]
+theorem SetTheory.Set.replacement_axiom {A : Set} {P : A → Object → Prop}
+  (hP : ∀ x y y', P x y ∧ P x y' → y = y') (y : Object) :
+    y ∈ A.replace hP ↔ ∃ x, P x y := SetTheory.replacement_axiom A P hP y
+
+abbrev Nat := SetTheory.nat
+
+example (x : Nat) : Nat.toSubtype := x
+example (x : Nat) : Object := x.val
+example (x : Nat) : (x.val ∈ Nat) := x.property
+example (o : Object) (ho : o ∈ Nat) : Nat := ⟨o, ho⟩
+
+/--
+公理 3.7 无穷公理
+
+存在一个集合`ℕ`，它的元素被称为自然数。
+对象`0`在`ℕ`中，且由每一个自然数`n ∈ ℕ`所指定的满足皮亚诺公理（公理2.1 ~ 2.5）的对象`n++`也在`ℕ`中。
+-/
+def SetTheory.Set.nat_equiv : ℕ ≃ Nat := SetTheory.nat_equiv
+
+instance SetTheory.Set.instOfNat {n : ℕ} : OfNat Nat n where
+  ofNat := nat_equiv n
+
+example : Nat := 5
+example : (5 : Nat).val ∈ Nat := (5 : Nat).property
+
+instance SetTheory.Set.instNatCast : NatCast Nat where
+  natCast n := nat_equiv n
+
+example (n : ℕ) : Nat := n
+example (n : ℕ) : (n : Nat).val ∈ Nat := (n : Nat).property
+
+instance SetTheory.Set.toNat : Coe Nat ℕ where
+  coe n := nat_equiv.symm n
+
+example (n : Nat) : ℕ := n
+
+instance SetTheory.Object.instNatCast : NatCast Object where
+  natCast n := (n : Nat).val
+
+example (n : ℕ) : Object := n
+example (n : ℕ) : Set := {(n : Object)}
+
+instance SetTheory.Object.instOfNat {n : ℕ} : OfNat Object n where
+  ofNat := ((n : Nat) : Object)
+
+example : Object := 1
+example : Set := {1, 2, 3}
+
+@[simp]
+lemma SetTheory.Object.ofnat_eq {n : ℕ} : ((n : Nat) : Object) = (n : Object) := rfl
+lemma SetTheory.Object.ofnat_eq' {n : ℕ} : (ofNat(n) : Object) = (n : Object) := rfl
+@[simp]
+lemma SetTheory.Object.ofnat_eq'' {n : Nat} : ((n : ℕ) : Object) = (n : Object) := by
+  simp only [Nat.cast, NatCast.natCast, Equiv.apply_symm_apply]
+@[simp]
+lemma SetTheory.Object.ofnat_eq''' {n : ℕ} {hn} : ((⟨(n : Object), hn⟩ : nat) : ℕ) = n := by
+  simp only [Nat.cast, NatCast.natCast, Subtype.coe_eta, Equiv.symm_apply_apply]
+
+lemma SetTheory.Set.nat_coe_eq {n : ℕ} : (n : Nat) = ofNat(n) := rfl
+@[simp]
+lemma SetTheory.Set.nat_equiv_inj (n m : ℕ) : (n : Nat) = (m : Nat) ↔ n = m :=
+  Equiv.apply_eq_iff_eq nat_equiv
+@[simp]
+lemma SetTheory.Set.nat_equiv_symm_inj (n m : Nat) : (n : ℕ) = (m : ℕ) ↔ n = m :=
+  Equiv.apply_eq_iff_eq nat_equiv.symm
+
+@[simp]
+theorem SetTheory.Set.ofNat_inj (n m : ℕ) :
+    (ofNat(n) : Nat) = (ofNat(m) : Nat) ↔ ofNat(n) = ofNat(m) := by
+  convert nat_equiv_inj _ _
+
+example : (5 : Nat) ≠ (3 : Nat) := by simp
+
+@[simp]
+theorem SetTheory.Set.ofNat_inj' (n m : ℕ) :
+    (ofNat(n) : Object) = (ofNat(m) : Object) ↔ ofNat(n) = ofNat(m) := by
+  simp only [← Object.ofnat_eq, Object.ofnat_eq', Set.coe_inj, Set.nat_equiv_inj]
+  rfl
+
+example : (5 : Object) ≠ (3 : Object) := by simp
+
+@[simp]
+theorem SetTheory.Set.nat_coe_eq_iff {m n : ℕ} : (m : Object) = ofNat(n) ↔ m = n := by
+  exact ofNat_inj' m n
+
+example (n : ℕ) : (n : Object) = 2 ↔ n = 2 := by simp
+
+@[simp]
+theorem SetTheory.Object.natCast_inj (n m : ℕ) :
+    (n : Object) = (m : Object) ↔ n = m := by
+  simp only [← ofnat_eq, Subtype.val_inj, nat_equiv_inj]
+
+@[simp]
+lemma SetTheory.Set.nat_equiv_coe_of_coe (n : ℕ) : ((n : Nat) : ℕ) = n :=
+  Equiv.symm_apply_apply nat_equiv n
+@[simp]
+lemma SetTheory.Set.nat_equiv_coe_of_coe' (n : Nat) : ((n : ℕ) : Nat) = n :=
+  Equiv.symm_apply_apply nat_equiv.symm n
+@[simp]
+lemma SetTheory.Set.nat_equiv_coe_of_coe'' (n : ℕ) : ((ofNat(n) : Nat) : ℕ) = n :=
+  nat_equiv_coe_of_coe n
+@[simp]
+lemma SetTheory.Set.nat_coe_eq_iff' {m : Nat} {n : ℕ} : (m : Object) = (ofNat(n) : Object) ↔ (m : ℕ) = ofNat(n) := by
+  constructor <;> intro h <;> rw [show m = n by aesop]
+  apply nat_equiv_coe_of_coe; rfl
+
+example : ({3, 5} : Set) ⊆ {1, 3, 5} := by
+  simp only [subset_def, mem_pair, mem_triple]; tauto
+example : ({3, 5} : Set).specify (fun x ↦ x.val ≠ 3) = ({5} : Set) := by
+  ext
+  simp only [mem_singleton, specification_axiom'']
+  constructor
+  · intro ⟨h1, h2⟩; simp only [mem_pair] at h1; tauto
+  rintro rfl; norm_num
+example : ({1, 2, 4} : Set) ∩ {2, 3, 4} = {2, 4} := by aesop
+example : ({1, 2} : Set) ∩ {3, 4} = ∅ := by aesop
+example : ¬ Disjoint ({1, 2, 3} : Set) {2, 3, 4} := by
+  rw [disjoint_iff]
+  intro h
+  change {1, 2, 3} ∩ {2, 3, 4} = ∅ at h
+  rw [eq_empty_iff_forall_notMem] at h
+  aesop
+example : Disjoint (∅ : Set) ∅ := by aesop
+example : ({1, 2, 3, 4} : Set) \ {2, 4, 6} = {1, 3} := by aesop
+example : ({3, 5, 9} : Set).replace (P := fun x y ↦ ∃ (n : ℕ), x.val = n ∧ y = (n + 1 : ℕ)) (by aesop)
+    = {4, 6, 10} := by
+  ext; simp only [replacement_axiom]
+  constructor
+  · rintro ⟨x, n, h1, h2⟩; aesop
+  · aesop
+example : ({3, 5, 9} : Set).replace (P := fun _ y ↦ y = 1) (by aesop) = {1} := by
+  ext; simp only [replacement_axiom]; aesop
+
 end Chapter3
