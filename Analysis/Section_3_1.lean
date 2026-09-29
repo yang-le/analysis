@@ -540,41 +540,41 @@ theorem SetTheory.Set.mem_sdiff (x : Object) (X Y : Set) : x ∈ (X \ Y) ↔ (x 
   intro ⟨hX, hY⟩; exact (specification_axiom' (fun x ↦ x.val ∉ Y) ⟨x, hX⟩).mpr hY
 
 /--
-命题 3.1.27 (d) 交换律
+命题 3.1.28 (d) 交换律
 -/
 theorem SetTheory.Set.inter_comm (A B : Set) : A ∩ B = B ∩ A := by
   ext; simp
   exact ⟨fun ⟨x, y⟩ ↦ ⟨y, x⟩, fun ⟨x, y⟩ ↦ ⟨y, x⟩⟩
 
 /--
-命题 3.1.27 (b) 最大元
+命题 3.1.28 (b) 最大元
 -/
 theorem SetTheory.Set.subset_union {A X : Set} (hAx : A ⊆ X) : A ∪ X = X := by
   ext; simp
   exact fun x ↦ hAx _ x
 
 /--
-命题 3.1.27 (b) 最大元
+命题 3.1.28 (b) 最大元
 -/
 theorem SetTheory.Set.union_subset {A X : Set} (hAx : A ⊆ X) : X ∪ A = X := by
   ext; simp
   exact fun x ↦ hAx _ x
 
 /--
-命题 3.1.27 (c) 幂等律
+命题 3.1.28 (c) 幂等律
 -/
 @[simp]
 theorem SetTheory.Set.inter_self (A : Set) : A ∩ A = A := by ext; simp
 
 /--
-命题 3.1.27 (e) 结合律
+命题 3.1.28 (e) 结合律
 -/
 theorem SetTheroy.Set.inter_assoc (A B C : Set) : (A ∩ B) ∩ C = A ∩ (B ∩ C) := by
   ext; simp
   exact ⟨fun ⟨⟨x, y⟩, z⟩ ↦ ⟨x, ⟨y, z⟩⟩, fun ⟨x, ⟨y, z⟩⟩ ↦ ⟨⟨x, y⟩, z⟩⟩
 
 /--
-命题 3.1.27 (f) 分配律
+命题 3.1.28 (f) 分配律
 -/
 theorem SetTheory.Set.inter_union_distrib_left (A B C : Set) :
     A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) := by
@@ -588,7 +588,7 @@ theorem SetTheory.Set.inter_union_distrib_left (A B C : Set) :
     exact ⟨h1, Or.inr h2⟩
 
 /--
-命题 3.1.27 (f) 分配律
+命题 3.1.28 (f) 分配律
 -/
 theorem SetTheory.Set.union_inter_distrib_left (A B C : Set) :
     A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C) := by
@@ -604,7 +604,7 @@ theorem SetTheory.Set.union_inter_distrib_left (A B C : Set) :
     exact Or.inr ⟨h1, h2⟩
 
 /--
-命题 3.1.27 (g) 拆分法
+命题 3.1.28 (g) 拆分法
 -/
 theorem SetTheory.Set.union_compl {A X : Set} (hAX : A ⊆ X) : A ∪ (X \ A) = X := by
   ext x; simp
@@ -618,19 +618,22 @@ theorem SetTheory.Set.union_compl {A X : Set} (hAX : A ⊆ X) : A ∪ (X \ A) = 
     exact Or.inr ⟨h, hA⟩
 
 /--
-命题 3.1.27 (g) 拆分法
+命题 3.1.28 (g) 拆分法
 -/
 theorem SetTheory.Set.inter_compl {A X : Set} : A ∩ (X \ A) = ∅ := by
   ext; simp
   exact fun x _ ↦ x
 
 /--
-命题 3.1.27 (h) 德·摩根定律
+命题 3.1.28 (h) 德·摩根定律
 -/
 theorem SetTheory.Set.compl_union {A B X : Set} : X \ (A ∪ B) = (X \ A) ∩ (X \ B) := by
   ext; simp
   exact ⟨fun ⟨x, y, z⟩ ↦ ⟨⟨x, y⟩, x, z⟩, fun ⟨⟨_, x⟩, y, z⟩ ↦ ⟨y, x, z⟩⟩
 
+/--
+命题 3.1.28 (h) 德·摩根定律
+-/
 theorem SetTheory.Set.compl_inter {A B X : Set} : X \ (A ∩ B) = (X \ A) ∪ (X \ B) := by
   ext x; simp
   constructor
@@ -818,5 +821,135 @@ example : ({3, 5, 9} : Set).replace (P := fun x y ↦ ∃ (n : ℕ), x.val = n �
   · aesop
 example : ({3, 5, 9} : Set).replace (P := fun _ y ↦ y = 1) (by aesop) = {1} := by
   ext; simp only [replacement_axiom]; aesop
+
+/--
+习题 3.1.5
+-/
+theorem SetTheory.Set.subset_tfae (A B : Set) : [A ⊆ B, A ∪ B = B, A ∩ B = A].TFAE := by
+  tfae_have 1 → 2 := subset_union
+  tfae_have 2 → 3 := by
+    intro h
+    ext; simp
+    intro hA
+    rw [← h]; simp
+    exact Or.inl hA
+  tfae_have 3 → 1 := by
+    intro h _ hA
+    rw [← h] at hA
+    simp at hA
+    exact hA.2
+  tfae_finish
+
+/--
+习题 3.1.7
+-/
+theorem SetTheory.Set.inter_subset_left (A B : Set) : A ∩ B ⊆ A := by
+  intro _ h
+  simp at h
+  exact h.1
+
+/--
+习题 3.1.7
+-/
+theorem SetTheory.Set.inter_subset_right (A B : Set) : A ∩ B ⊆ B := by
+  intro _ h
+  simp at h
+  exact h.2
+
+/--
+习题 3.1.7
+-/
+@[simp]
+theorem SetTheory.Set.subset_inter_iff (A B C : Set) : C ⊆ A ∩ B ↔ C ⊆ A ∧ C ⊆ B := by
+  constructor
+  · intro h
+    constructor <;> intro _ hx <;> have := h _ hx <;> simp at this
+    · exact this.1
+    · exact this.2
+  · intro ⟨h1, h2⟩ _ h
+    simp
+    exact ⟨h1 _ h, h2 _ h⟩
+
+/--
+习题 3.1.7
+-/
+theorem SetTheory.Set.subset_union_left (A B : Set) : A ⊆ A ∪ B := by
+  intro _ h
+  simp
+  exact Or.inl h
+
+/--
+习题 3.1.7
+-/
+theorem SetTheory.Set.subset_union_right (A B : Set) : B ⊆ A ∪ B := by
+  intro _ h
+  simp
+  exact Or.inr h
+
+/--
+习题 3.1.7
+-/
+@[simp]
+theorem SetTheory.Set.union_subset_iff (A B C : Set) : A ∪ B ⊆ C ↔ A ⊆ C ∧ B ⊆ C := by
+  constructor
+  · intro h
+    constructor <;> intro _ hx <;> exact h _ (show _ ∈ A ∪ B by aesop)
+  · intro ⟨h1, h2⟩ _ h
+    simp at h
+    cases' h with h h
+    · exact h1 _ h
+    · exact h2 _ h
+
+/--
+习题 3.1.8
+-/
+@[simp]
+theorem SetTheory.Set.inter_union_cancel (A B : Set) : A ∩ (A ∪ B) = A := by aesop
+
+/--
+习题 3.1.8
+-/
+@[simp]
+theorem SetTheory.Set.union_inter_cancel (A B : Set) : A ∪ (A ∩ B) = A := by aesop
+
+/--
+习题 3.1.9
+-/
+theorem SetTheory.Set.partition_left {A B X : Set} (h_union : A ∪ B = X) (h_inter : A ∩ B = ∅) :
+    A = X \ B := by
+  ext x; simp
+  have : x ∈ A ∧ x ∈ B → x ∈ A ∩ B := by simp
+  aesop
+
+/--
+习题 3.1.9
+-/
+theorem SetTheroy.Set.partition_right {A B X : Set} (h_union : A ∪ B = X) (h_inter : A ∩ B = ∅) :
+    B = X \ A := by
+  ext x; simp
+  have : x ∈ A ∧ x ∈ B → x ∈ A ∩ B := by simp
+  aesop
+
+/--
+习题 3.1.10
+-/
+theorem SetTheory.Set.pairwise_disjoint (A B : Set) :
+    Pairwise (Function.onFun Disjoint ![A \ B, A ∩ B, B \ A]) := by
+  sorry
+
+/--
+习题 3.1.10
+-/
+theorem SetTheroy.Set.union_eq_partition (A B : Set) : A ∪ B = (A \ B) ∪ (A ∩ B) ∪ (B \ A) := by
+  ext x; simp; grind
+
+/--
+习题 3.1.11
+
+要求不能使用分离公理及其推论，例如`Set.specify, Set.specification_axiom`以及差集、交集等
+-/
+theorem SetTheory.Set.specification_from_replacement {A : Set} {P : A → Prop} :
+    ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by
+  sorry
 
 end Chapter3
