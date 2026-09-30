@@ -935,13 +935,16 @@ theorem SetTheroy.Set.partition_right {A B X : Set} (h_union : A ∪ B = X) (h_i
 -/
 theorem SetTheory.Set.pairwise_disjoint (A B : Set) :
     Pairwise (Function.onFun Disjoint ![A \ B, A ∩ B, B \ A]) := by
-  sorry
+  intro i j
+  fin_cases i <;> fin_cases j <;> simp <;> intro X <;> simp <;>
+  intro h1 h2 <;> by_contra! h <;> obtain ⟨_, hx⟩ := nonempty_def h <;>
+  have h1' := h1 _ hx <;> have h2' := h2 _ hx <;> aesop
 
 /--
 习题 3.1.10
 -/
 theorem SetTheroy.Set.union_eq_partition (A B : Set) : A ∪ B = (A \ B) ∪ (A ∩ B) ∪ (B \ A) := by
-  ext x; simp; grind
+  ext _; simp; grind
 
 /--
 习题 3.1.11
@@ -950,6 +953,117 @@ theorem SetTheroy.Set.union_eq_partition (A B : Set) : A ∪ B = (A \ B) ∪ (A 
 -/
 theorem SetTheory.Set.specification_from_replacement {A : Set} {P : A → Prop} :
     ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by
-  sorry
+  by_cases h : ∃ y : A, P y
+  · obtain ⟨y', _⟩ := h
+    -- 参考 https://yang-le.github.io/blog/2024/11/21/zfc%E9%9B%86%E5%90%88%E8%AE%BA/#_5
+    use A.replace (P := fun x y ↦ P x ∧ x = y ∨ ¬ P x ∧ y' = y) (by aesop)
+    exact ⟨by intro _; aesop, by aesop⟩
+  · use ∅; aesop
+
+theorem SetTheory.Set.subset_union_subset {A B A' B' : Set} (hA'A : A' ⊆ A) (hB'B : B' ⊆ B) :
+    A' ∪ B' ⊆ A ∪ B := by
+  intro _; aesop
+
+theorem SetTheory.Set.subset_inter_subset {A B A' B' : Set} (hA'A : A' ⊆ A) (hB'B : B' ⊆ B) :
+    A' ∩ B' ⊆ A ∩ B := by
+  intro _; aesop
+
+theorem SetTheory.Set.subset_diff_subset_counter :
+    ∃ (A B A' B' : Set), (A' ⊆ A) ∧ (B' ⊆ B) ∧ ¬ (A' \ B') ⊆ (A \ B) := by
+  use {2, 3}, {2, 3}, {2}, {3}
+  split_ands
+  · intro _; aesop
+  · intro _; aesop
+  · by_contra h
+    have := h 2
+    aesop
+
+theorem SetTheory.Set.singleton_iff (A : Set) (hA : A ≠ ∅) : (¬ ∃ B ⊂ A, B ≠ ∅) ↔ ∃ x, A = {x} := by
+  constructor
+  · intro h
+    simp at h
+    obtain ⟨y, _⟩ := nonempty_def hA
+    use y
+    by_contra _
+    have h2 : y ∈ ({y} : Set) := by simp
+    rw [h _ (show {y} ⊂ A by exact ⟨by intro _; aesop, by aesop⟩)] at h2; aesop
+  · rintro ⟨x, rfl⟩
+    by_contra h
+    obtain ⟨X, ⟨⟨h1, _⟩, h3⟩⟩ := h
+    obtain ⟨y, hy⟩ := nonempty_def h3
+    have := h1 _ hy
+    have : y = x := by aesop
+    have := subset_antisymm _ _ h1 (show {x} ⊆ X by intro _; aesop)
+    contradiction
+
+instance SetTheory.Set.inst_coe_set : Coe Set (_root_.Set Object) where
+  coe X := {x | x ∈ X}
+
+example (X : Set) : _root_.Set Object := X
+
+@[simp]
+theorem SetTheory.Set.coe_inj' (X Y : Set) :
+    (X : _root_.Set Object) = (Y : _root_.Set Object) ↔ X = Y := by
+  constructor
+  · intro h; apply ext; intro x
+    replace h := congr(x ∈ $h); simpa using h
+  rintro rfl; rfl
+
+theorem SetTheory.Set.mem_coe (X : Set) (x : Object) : x ∈ (X : _root_.Set Object) ↔ x ∈ X := by
+  simp
+
+theorem SetTheory.Set.coe_empty : ((∅ : Set) : _root_.Set Object) = ∅ := by simp
+
+theorem SetTheory.Set.coe_subset (X Y : Set) :
+    (X : _root_.Set Object) ⊆ (Y : _root_.Set Object) ↔ X ⊆ Y := by aesop
+
+theorem SetTheory.Set.coe_ssubset (X Y : Set) :
+    (X : _root_.Set Object) ⊂ (Y : _root_.Set Object) ↔ X ⊂ Y := by
+  constructor
+  · rintro ⟨_, _⟩; constructor <;> aesop
+  · rintro ⟨h1, _⟩; constructor
+    · assumption
+    · by_contra h
+      have := subset_antisymm _ _ h1 h
+      contradiction
+
+theorem SetTheory.Set.coe_singleton (x : Object) : (({x} : Set) : _root_.Set Object) = {x} := by
+  simp
+
+theorem SetTheory.Set.coe_union (X Y : Set) :
+    ((X ∪ Y : Set) : _root_.Set Object) = (X : _root_.Set Object) ∪ (Y : _root_.Set Object) := by
+  simp only [mem_union]; rfl
+
+theorem SetTheory.Set.coe_pair (x y : Object) : (({x, y} : Set) : _root_.Set Object) = {x, y} := by
+  simp only [mem_insert, mem_singleton]; rfl
+
+theorem SetTheory.Set.coe_subtype (X : Set) : (X : _root_.Set Object) = X.toSubtype := by simp
+
+theorem SetTheory.Set.coe_intersection (X Y : Set) :
+    ((X ∩ Y : Set) : _root_.Set Object) = (X : _root_.Set Object) ∩ (Y : _root_.Set Object) := by
+  simp only [mem_inter]; rfl
+
+theorem SetTheory.Set.coe_diff (X Y : Set) :
+    ((X \ Y : Set) : _root_.Set Object) = (X : _root_.Set Object) \ (Y : _root_.Set Object) := by
+  simp_all only [mem_sdiff]; rfl
+
+theorem SetTheory.Set.coe_Disjoint (X Y : Set) :
+    Disjoint (X : _root_.Set Object) (Y : _root_.Set Object) ↔ Disjoint X Y := by
+  constructor
+  · intro h W hWX hWY
+    by_cases hW : W = ∅
+    · simpa
+    · obtain ⟨w, hx⟩ := nonempty_def hW
+      have := h hWX hWY hx
+      simp_all only [Set.bot_eq_empty, Set.mem_empty_iff_false]
+  · intro h W hWX hWY
+    by_cases hW : W = ∅
+    · simpa
+    · rw [disjoint_iff] at h
+      obtain ⟨w, hw⟩ := Set.nonempty_iff_ne_empty.mpr hW
+      have : w ∈ X ∩ Y := by
+        rw [mem_inter]; exact ⟨hWX hw, hWY hw⟩
+      rw [h] at this
+      simp_all only [not_mem_empty]
 
 end Chapter3
