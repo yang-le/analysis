@@ -176,4 +176,138 @@ theorem Function.eq_iff {X Y : Set} (f g : Function X Y) : f = g ↔ ∀ x : X, 
   · rwa [← Function.eval, ← h x, Function.eval]
   rwa [← Function.eval, h x, Function.eval]
 
+/--
+例 3.3.8
+-/
+abbrev SetTheory.Set.f_3_3_10a : Function Nat Nat := Function.mk_fn (fun x ↦ (x ^ 2 + 2 * x + 1 : ℕ))
+abbrev SetTheory.Set.f_3_3_10b : Function Nat Nat := Function.mk_fn (fun x ↦ ((x + 1) ^ 2 : ℕ))
+
+theorem SetTheory.Set.f_3_3_10_eq : f_3_3_10a = f_3_3_10b := by
+  simp_rw [Function.eq_iff, Function.eval_of]
+  intros; simp; ring
+
+example : (fun x : NNReal ↦ (x : ℝ)) = (fun x : NNReal ↦ |(x : ℝ)|) := by
+  simp_rw [NNReal.abs_eq]
+
+example : (fun x : ℝ ↦ (x : ℝ)) ≠ (fun x : ℝ ↦ |(x : ℝ)|) := by
+  intro h
+  let a := (fun x : ℝ ↦ (x : ℝ)) (-1)
+  let b := (fun x : ℝ ↦ |(x : ℝ)|) (-1)
+  have hab : a = b := by unfold a; rw [h]
+  norm_num [a, b] at hab
+
+/--
+例 3.3.9
+-/
+abbrev SetTheory.Set.f_3_3_11 (X : Set) : Function (∅ : Set) X :=
+  Function.mk (fun _ _ ↦ true) (by intro ⟨x, hx⟩; simp at hx)
+
+theorem SetTheory.Set.empty_function_unique {X : Set} (f g : Function (∅ : Set) X) : f = g := by
+  simp_rw [Function.eq_iff]
+  intro x
+  have := x.property
+  simp at this
+
+/--
+定义 3.3.10 复合
+
+令`f : X → Y`和`g : Y → Z`为两个函数，并且满足`f`的值域与`g`的定义域是同一个集合。
+那么我们定义两个函数`g`和`f`的复合`g ∘ f : X → Z`为一个函数，并由下面的式子来显式定义
+`(g ∘ f)(x) := g(f(x))`
+-/
+noncomputable abbrev Function.comp {X Y Z : Set} (g : Function Y Z) (f : Function X Y) :
+    Function X Z := Function.mk_fn (fun x ↦ g (f x))
+
+infix:90 "○" => Function.comp
+
+theorem Function.comp_eval {X Y Z : Set} (g : Function Y Z) (f : Function X Y) (x : X) :
+    (g ○ f) x = g (f x) := Function.eval_of _ _
+
+theorem Function.comp_eq_comp {X Y Z : Set} (g : Function Y Z) (f : Function X Y) :
+    (g ○ f).to_fn = g.to_fn ∘ f.to_fn := by
+  ext; simp only [Function.comp_eval, Function.comp_apply]
+
+/--
+例 3.3.11
+-/
+abbrev SetTheory.Set.f_3_3_14 : Function Nat Nat := Function.mk_fn (fun x ↦ (2 * x : ℕ))
+abbrev SetTheory.Set.g_3_3_14 : Function Nat Nat := Function.mk_fn (fun x ↦ (x + 3 : ℕ))
+
+theorem SetTheory.Set.g_circ_f_3_3_14 :
+    g_3_3_14 ○ f_3_3_14 = Function.mk_fn (fun x ↦ ((2 * (x : ℕ) + 3 : ℕ) : Nat)) := by
+  simp [Function.eq_iff, Function.eval_of]
+
+theorem SetTheory.Set.f_circ_g_3_3_14 :
+    f_3_3_14 ○ g_3_3_14 = Function.mk_fn (fun x ↦ ((2 * (x : ℕ) + 6 : ℕ) : Nat)) := by
+  simp [Function.eq_iff, Function.eval_of]
+  intros; ring
+
+/--
+引理 3.3.12 复合是可结合的
+
+设`f : Z → W, g : Y → Z`和`h : X → Y`是三个函数，那么`f ∘ (g ∘ h) = (f ∘ g) ∘ h`
+-/
+theorem SetTheory.Set.comp_assoc {W X Y Z : Set} (h : Function X Y) (g : Function Y Z) (f : Function Z W) :
+    f ○ (g ○ h) = (f ○ g) ○ h := by
+  simp [Function.eq_iff]
+
+/--
+定义 3.3.14 一对一函数
+
+如果函数`f`把不同的元素映射到不同的元素：
+`x ≠ x' → f(x) ≠ f(x')`
+则函数`f`是一对一的（或单射的）。即如果函数`f`满足
+`f(x) = f(x') → x = x'`
+则函数`f`是一对一的
+-/
+abbrev Function.one_to_one {X Y : Set} (f : Function X Y) : Prop := ∀ x x' : X, x ≠ x' → f x ≠ f x'
+
+theorem Function.one_to_one_iff {X Y : Set} (f : Function X Y) :
+    f.one_to_one ↔ ∀ x x' : X, f x = f x' → x = x' := by
+  congr! 2 with x x'; tauto
+
+theorem Function.one_to_one_iff' {X Y : Set} (f : Function X Y) :
+    f.one_to_one ↔ Function.Injective f.to_fn := by
+  rw [one_to_one_iff, Function.Injective]
+
+/--
+例 3.3.15
+-/
+theorem SetTheory.Set.f_3_3_18_one_to_one :
+    (Function.mk_fn (fun (n : Nat) ↦ ((n ^ 2 : ℕ) : Nat))).one_to_one := by
+  rw [Function.one_to_one_iff]
+  intro _ _ h
+  simpa [Function.eval, Function.eval_of] using h
+
+example : ¬ Function.Injective (fun (n : ℤ) ↦ n ^ 2) := by
+  intro h
+  have h1 : (fun n ↦ n ^ 2) 1 = (1 : ℤ) := by norm_num
+  have h2 : (fun n ↦ n ^ 2) (-1) = (1 : ℤ) := by norm_num
+  nth_rewrite 2 [← h1] at h2
+  specialize h h2
+  contradiction
+
+example : Function.Injective (fun (n : ℕ) ↦ n ^ 2) := by
+  intro _ _ _; rwa [← pow_left_inj₀ (by norm_num) (by norm_num) (show 2 ≠ 0 by norm_num)]
+
+/--
+注 3.3.16
+
+如果函数`f : X → Y`不是一对一的，那么在定义域`X`中可以找到两个不相等的元素`x`和`x'`使得`f(x) = f(x')`,
+因此我们能够找到被映射到同一个输出的两个输入。正因如此，我们称`f`是二对一的。
+-/
+theorem SetTheory.Set.two_to_one {X Y : Set} {f : Function X Y} (h : ¬ f.one_to_one) :
+    ∃ x x' : X, x ≠ x' ∧ f x = f x' := by
+  rw [Function.one_to_one] at h; simp_all
+
+/--
+定义 3.3.17 映上函数
+
+如果`f(X) = Y`，即`Y`中每一个元素都能通过`f`对`X`中某个元素起作用得到，那么函数`f`是映上的（或满射的）
+`∀ y ∈ Y, ∃ x ∈ X, f(x) = y`
+-/
+abbrev Function.onto {X Y : Set} (f : Function X Y) : Prop := ∀ y : Y, ∃ x : X, f x = y
+
+theorem Function.onto_iff {X Y : Set} (f : Function X Y) : f.onto ↔ Function.Surjective f.to_fn := by rfl
+
 end Chapter3
