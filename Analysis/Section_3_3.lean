@@ -310,4 +310,226 @@ abbrev Function.onto {X Y : Set} (f : Function X Y) : Prop := ∀ y : Y, ∃ x :
 
 theorem Function.onto_iff {X Y : Set} (f : Function X Y) : f.onto ↔ Function.Surjective f.to_fn := by rfl
 
+/--
+例 3.3.18
+-/
+example : ¬ Function.Surjective (fun (n : ℤ) ↦ n ^ 2) := by
+  unfold Function.Surjective; push Not
+  use -1; intro a
+  linarith [sq_nonneg a]
+
+abbrev A_3_3_21 := {m : ℤ // ∃ n : ℤ, m = n ^ 2}
+example : Function.Surjective (fun (n : ℤ) ↦ ⟨n ^ 2, by use n⟩ : ℤ → A_3_3_21) := by
+  rintro ⟨b, ⟨a, ha⟩⟩; use a
+  simp only [ha]
+
+/--
+定义 3.3.20 双射函数
+
+既是一对一的又是映上的函数`f : X → Y`也被称为双射函数或可逆函数。
+-/
+abbrev Function.bijective {X Y : Set} (f : Function X Y) : Prop := f.one_to_one ∧ f.onto
+
+theorem Function.bijective_iff {X Y : Set} (f : Function X Y) :
+    f.bijective ↔ Function.Bijective f.to_fn := by
+  rw [Function.bijective, Function.Bijective, one_to_one_iff', onto_iff]
+
+/--
+例 3.3.21
+-/
+abbrev f_3_3_24 : Fin 3 → ({3, 4} : _root_.Set ℕ) := fun x ↦ match x with
+| 0 => ⟨3, by norm_num⟩
+| 1 => ⟨3, by norm_num⟩
+| 2 => ⟨4, by norm_num⟩
+
+example : ¬ Function.Injective f_3_3_24 := by decide
+example : ¬ Function.Bijective f_3_3_24 := by decide
+
+abbrev g_3_3_24 : Fin 2 → ({2, 3, 4} : _root_.Set ℕ) := fun x ↦ match x with
+| 0 => ⟨2, by norm_num⟩
+| 1 => ⟨3, by norm_num⟩
+
+example : ¬ Function.Surjective g_3_3_24 := by decide
+example : ¬ Function.Bijective g_3_3_24 := by decide
+
+abbrev h_3_3_24 : Fin 3 → ({3, 4, 5} : _root_.Set ℕ) := fun x ↦ match x with
+| 0 => ⟨3, by norm_num⟩
+| 1 => ⟨4, by norm_num⟩
+| 2 => ⟨5, by norm_num⟩
+
+example : Function.Bijective h_3_3_24 := by decide
+
+/--
+例 3.3.22
+-/
+example : Function.Bijective (fun n ↦ ⟨n + 1, by omega⟩ : ℕ → {n : ℕ // n ≠ 0}) := by
+  constructor
+  · intro _ _
+    simp only [Subtype.mk.injEq]; omega
+  intro ⟨x, hx⟩; use x - 1
+  simp only [Subtype.mk.injEq]; omega
+
+example : ¬ Function.Bijective (fun n ↦ n + 1) := by
+  suffices h : ¬ Function.Surjective (fun n ↦ n + 1) by unfold Function.Bijective; tauto
+  unfold Function.Surjective; push Not
+  use 0; intros
+  symm; apply Nat.zero_ne_add_one
+
+/--
+注 3.3.24
+-/
+theorem Function.bijective_incorrect_def :
+    ∃ X Y : Set, ∃ f : Function X Y, (∀ x : X, ∃! y : Y, y = f x) ∧ ¬ f.bijective := by
+  use Nat, Nat
+  set f := mk_fn fun x ↦ (0 : Nat); use f
+  constructor
+  · intros
+    apply existsUnique_of_exists_of_unique
+    · use 0; rw [Function.eval]
+    intros; rw [Function.eval] at *; simp_all only [f]
+  rw [Function.bijective]
+  suffices h : ¬ f.one_to_one by tauto
+  rw [Function.one_to_one_iff]
+  push Not; use 0, 1; simp [f]
+
+abbrev Function.inverse {X Y : Set} (f : Function X Y) (h : f.bijective) :
+    Function Y X :=
+  Function.mk (fun y x ↦ f x = y) (by
+    intros
+    apply existsUnique_of_exists_of_unique
+    · simp_all only
+    intro _ _ hx hx'
+    rw [← hx'] at hx
+    apply f.one_to_one_iff.mp h.1
+    simp [hx]
+  )
+
+theorem Function.inverse_eval {X Y : Set} {f : Function X Y} (h : f.bijective) (y : Y) (x : X) :
+    x = (f.inverse h) y ↔ f x = y := Function.eval _ _ _
+
+theorem Function.inverse_eq {X Y : Set} [Nonempty X] {f : Function X Y} (h : f.bijective) :
+    (f.inverse h).to_fn = Function.invFun f.to_fn := by
+  ext y; congr; symm
+  rw [inverse_eval]
+  apply Function.rightInverse_invFun (f.bijective_iff.mp h).2
+
+/--
+习题 3.3.1
+
+使用`Function.eq_iff`证明
+-/
+theorem Function.refl {X Y : Set} (f : Function X Y) : f = f := by
+  rw [eq_iff]
+  intro x; rfl
+
+theorem Function.symm {X Y : Set} (f g : Function X Y) : f = g ↔ g = f := by
+  constructor <;>
+    rw [eq_iff, eq_iff] <;>
+    intro h x <;>
+    symm <;>
+    exact h x
+
+theorem Function.trans {X Y : Set} (f g h : Function X Y) (hfg : f = g) (hgh : g = h) : f = h := by
+  rw [eq_iff] at *
+  intro x
+  have h1 := hfg x
+  have h2 := hgh x
+  rwa [h2] at h1
+
+theorem Function.comp_congr {X Y Z : Set} {f f' : Function X Y} (hff' : f = f') {g g' : Function Y Z}
+    (hgg' : g = g') : g ○ f = g' ○ f' := by
+  rw [eq_iff] at *; intro
+  rw [comp_eval, comp_eval, hff', hgg']
+
+/--
+习题 3.3.2
+-/
+theorem Function.comp_of_inj {X Y Z : Set} {f : Function X Y} {g : Function Y Z} (hf : f.one_to_one)
+    (hg : g.one_to_one) : (g ○ f).one_to_one := by
+  intro _ _ h
+  rw [comp_eval, comp_eval]
+  by_contra h'
+  have := hg _ _ (hf _ _ h)
+  contradiction
+
+theorem Function.comp_of_surj {X Y Z : Set} {f : Function X Y} {g : Function Y Z} (hf : f.onto)
+    (hg : g.onto) : (g ○ f).onto := by
+  intro y
+  obtain ⟨x, hx⟩ := hg y
+  obtain ⟨x', hx'⟩ := hf x
+  use x'
+  rwa [comp_eval, hx']
+
+/--
+习题 3.3.3
+-/
+theorem empty_function_one_to_one_iff (X : Set) (f : Function ∅ X) : f.one_to_one := by
+  intro x; simp
+
+theorem empty_function_onto_iff (X : Set) (f : Function ∅ X) : f.onto ↔ X = ∅ := by
+  constructor
+  · intro h
+    by_contra h'
+    obtain ⟨x, hx⟩ := SetTheory.Set.nonempty_def h'
+    obtain ⟨x', _⟩ := h ⟨x, hx⟩
+    absurd x'.property; simp
+  · intro h y
+    rw [h] at y
+    absurd y.property; simp
+
+theorem empty_function_bijective_iff (X : Set) (f : Function ∅ X) : f.bijective ↔ X = ∅ := by
+  constructor
+  · rintro ⟨h1, h2⟩
+    rwa [← empty_function_onto_iff]
+  · intro h
+    exact ⟨empty_function_one_to_one_iff _ _, (empty_function_onto_iff _ _).mpr h⟩
+
+/--
+习题 3.3.4
+-/
+theorem Function.comp_cancel_left {X Y Z : Set} {f f' : Function X Y} {g : Function Y Z}
+    (heq : g ○ f = g ○ f') (hg : g.one_to_one) : f = f' := by
+  rw [eq_iff]
+  intro x
+  apply (one_to_one_iff _).mp hg _ _
+  rw [← comp_eval, ← comp_eval, heq]
+
+theorem Function.comp_cancel_right {X Y Z : Set} {f : Function X Y} {g g' : Function Y Z}
+    (heq : g ○ f = g' ○ f) (hf : f.onto) : g = g' := by
+  rw [eq_iff]
+  intro x
+  obtain ⟨_, hy⟩ := hf x
+  rw [← hy, ← comp_eval, ← comp_eval, heq]
+
+def Function.comp_cancel_left_without_hg : Decidable (∀ (X Y Z : Set) (f f' : Function X Y) (g : Function Y Z) (_heq : g ○ f = g ○ f'), f = f') := by
+  apply isFalse
+  push Not
+  use Nat, Nat, Nat
+  let f : Function Nat Nat := mk_fn fun x ↦ 1
+  let f' : Function Nat Nat := mk_fn fun x ↦ 2
+  let g : Function Nat Nat := mk_fn fun x ↦ 3
+  use f, f', g
+  unfold f f' g;
+  constructor
+  · simp
+  · intro h
+    rw [eq_iff] at h
+    aesop
+
+def Function.comp_cancel_right_without_hg : Decidable (∀ (X Y Z : Set) (f : Function X Y) (g g' : Function Y Z) (_heq : g ○ f = g' ○ f), g = g') := by
+  apply isFalse
+  push Not
+  use Nat, Nat, Nat
+  let f : Function Nat Nat := mk_fn fun x ↦ 1
+  let g' : Function Nat Nat := mk_fn fun x ↦ x
+  let g : Function Nat Nat := mk_fn fun x ↦ 1
+  use f, g, g'
+  unfold f g g'
+  constructor
+  · simp
+  · intro h
+    rw [eq_iff] at h
+    have := h 2
+    simp at this
+
 end Chapter3
