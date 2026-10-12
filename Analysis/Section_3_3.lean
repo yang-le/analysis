@@ -512,7 +512,7 @@ def Function.comp_cancel_left_without_hg : Decidable (∀ (X Y Z : Set) (f f' : 
   unfold f f' g;
   constructor
   · simp
-  · intro h
+  · by_contra h
     rw [eq_iff] at h
     aesop
 
@@ -527,9 +527,141 @@ def Function.comp_cancel_right_without_hg : Decidable (∀ (X Y Z : Set) (f : Fu
   unfold f g g'
   constructor
   · simp
-  · intro h
+  · by_contra h
     rw [eq_iff] at h
     have := h 2
     simp at this
+
+/--
+习题 3.3.5
+-/
+theorem Function.comp_injective {X Y Z : Set} {f : Function X Y} {g : Function Y Z} (hinj : (g ○ f).one_to_one) : f.one_to_one := by
+  intro x x' hne
+  by_contra h
+  have := hinj x x' hne
+  rw [comp_eval, comp_eval, h] at this
+  contradiction
+
+theorem Function.comp_surjective {X Y Z : Set} {f : Function X Y} {g : Function Y Z} (hsurj : (g ○ f).onto) : g.onto := by
+  intro x
+  obtain ⟨y, hy⟩ := hsurj x
+  aesop
+
+def Function.comp_injective' : Decidable (∀ (X Y Z : Set) (f : Function X Y) (g : Function Y Z) (_hinj : (g ○ f).one_to_one), g.one_to_one) := by
+  apply isFalse
+  push Not
+  use Nat, Nat, Nat
+  let f : Function Nat Nat := mk_fn fun x ↦ (x : ℕ) * (2 : ℕ)
+  let g : Function Nat Nat := mk_fn fun x ↦ (x : ℕ) / (2 : ℕ)
+  use f, g
+  unfold f g
+  constructor
+  · simp
+  · by_contra h
+    have := h 2 3 (show 2 ≠ 3 by norm_num)
+    simp at this
+
+def Function.comp_surjective' : Decidable (∀ (X Y Z : Set) (f : Function X Y) (g : Function Y Z) (_hsurj : (g ○ f).onto), f.onto) := by
+  apply isFalse
+  push Not
+  use Nat, Nat, Nat
+  let f : Function Nat Nat := mk_fn fun x ↦ (x : ℕ) + (1 : ℕ)
+  let g : Function Nat Nat := mk_fn fun x ↦ (x : ℕ) - (1 : ℕ)
+  use f, g
+  unfold f g
+  constructor
+  · simp
+  · by_contra h
+    obtain ⟨x, hx⟩ := h 0
+    simp at hx
+    have hx' : SetTheory.Set.nat_equiv.symm x + 1 = 0 :=
+      (SetTheory.Set.nat_equiv_inj _ _).mp hx
+    have := Nat.succ_ne_zero x
+    contradiction
+
+/--
+习题 3.3.6
+-/
+theorem Function.inverse_comp_self {X Y : Set} {f : Function X Y} (h : f.bijective) (x : X) :
+    (f.inverse h) (f x) = x := by
+  symm; rw [inverse_eval]
+
+theorem Function.self_comp_inverse {X Y : Set} {f : Function X Y} (h : f.bijective) (y : Y) :
+    f ((f.inverse h) y) = y := by
+  rw [← inverse_eval]
+
+theorem Function.inverse_bijective {X Y : Set} {f : Function X Y} (h : f.bijective) :
+    (f.inverse h).bijective := by
+  constructor
+  · intro x x' hne
+    by_contra
+    rw [inverse_eval, self_comp_inverse] at this
+    contradiction
+  · unfold onto at *
+    intro x
+    use f x
+    exact inverse_comp_self _ _
+
+theorem Function.inverse_inverse {X Y : Set} {f : Function X Y} (h : f.bijective) :
+    (f.inverse h).inverse (f.inverse_bijective h) = f := by
+  rw [eq_iff]
+  intro x; symm
+  rw [inverse_eval]
+  exact inverse_comp_self _ _
+
+/--
+习题 3.3.7
+-/
+theorem Function.comp_bijective {X Y Z : Set} {f : Function X Y} {g : Function Y Z} (hf : f.bijective) (hg : g.bijective) :
+    (g ○ f).bijective := by
+  exact ⟨comp_of_inj hf.1 hg.1, comp_of_surj hf.2 hg.2⟩
+
+theorem Function.inv_of_comp {X Y Z : Set} {f : Function X Y} {g : Function Y Z} (hf : f.bijective) (hg : g.bijective) :
+    (g ○ f).inverse (Function.comp_bijective hf hg) = (f.inverse hf) ○ (g.inverse hg) := by
+  rw [eq_iff]
+  intro x
+  symm
+  rw [inverse_eval, comp_eval, comp_eval, self_comp_inverse, self_comp_inverse]
+
+/--
+习题 3.3.8
+-/
+abbrev Function.inclusion {X Y : Set} (h : X ⊆ Y) :
+    Function X Y := Function.mk_fn (fun x ↦ ⟨x.val, h x.val x.property⟩)
+
+abbrev Function.id (X : Set) : Function X X := Function.mk_fn (fun x ↦ x)
+
+theorem Function.inclusion_id (X : Set) :
+    Function.inclusion (SetTheory.Set.subset_self X) = Function.id X := by rfl
+
+theorem Function.inclusion_comp (X Y Z : Set) (hXY : X ⊆ Y) (hYZ : Y ⊆ Z) :
+    Function.inclusion hYZ ○ Function.inclusion hXY = Function.inclusion (SetTheory.Set.subset_trans hXY hYZ) := by simp
+
+theorem Function.comp_id {A B : Set} (f : Function A B) : f ○ Function.id A = f := by
+  rw [eq_iff]; simp
+
+theorem Function.id_comp {A B : Set} (f : Function A B) : Function.id B ○ f = f := by
+  rw [eq_iff]; simp
+
+theorem Function.comp_inv {A B : Set} (f : Function A B) (hf : f.bijective) :
+    f ○ f.inverse hf = Function.id B := by
+  simp [self_comp_inverse]
+
+theorem Function.inv_comp {A B : Set} (f : Function A B) (hf : f.bijective) :
+    f.inverse hf ○ f = Function.id A := by
+  simp [inverse_comp_self]
+
+open Classical in
+theorem Function.glue {X Y Z : Set} (hXY : Disjoint X Y) (f : Function X Z) (g : Function Y Z) :
+    ∃! h : Function (X ∪ Y) Z, (h ○ Function.inclusion (SetTheory.Set.subset_union_left X Y) = f)
+    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by sorry
+  -- h在X上定义为f, 在其余部分定义为g即可
+
+open Classical in
+theorem Function.glue' {X Y Z : Set} (f : Function X Z) (g : Function Y Z)
+    (hfg : ∀ x : ((X ∩ Y) : Set), f ⟨x.val, by aesop⟩ = g ⟨x.val, by aesop⟩) :
+    ∃! h : Function (X ∪ Y) Z, (h ○ Function.inclusion (SetTheory.Set.subset_union_left X Y) = f)
+    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by sorry
+  -- h在X-Y上定义为f, 在其余部分定义为g即可
 
 end Chapter3
