@@ -654,14 +654,55 @@ theorem Function.inv_comp {A B : Set} (f : Function A B) (hf : f.bijective) :
 open Classical in
 theorem Function.glue {X Y Z : Set} (hXY : Disjoint X Y) (f : Function X Z) (g : Function Y Z) :
     ∃! h : Function (X ∪ Y) Z, (h ○ Function.inclusion (SetTheory.Set.subset_union_left X Y) = f)
-    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by sorry
-  -- h在X上定义为f, 在其余部分定义为g即可
+    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by
+  let h' : Function (X ∪ Y) Z := mk_fn fun x ↦ if h : x.val ∈ X then f ⟨x.val, h⟩ else g ⟨x.val, by aesop⟩
+  use h'
+  split_ands
+  · rw [eq_iff]
+    intro x
+    have := x.property
+    unfold h'; simp
+    intro h
+    contradiction
+  · rw [eq_iff]
+    intro x
+    have := x.property
+    unfold h'; simp
+    intro h
+    have : x.val ∈ X ∩ Y := by aesop
+    rw [(SetTheory.Set.disjoint_iff _ _).mp hXY] at this
+    simp_all only [SetTheory.Set.not_mem_empty]
+  · rintro h ⟨h1, h2⟩
+    rw [eq_iff]
+    intro x
+    unfold h'
+    rw [← h1, ← h2]
+    simp
 
 open Classical in
 theorem Function.glue' {X Y Z : Set} (f : Function X Z) (g : Function Y Z)
     (hfg : ∀ x : ((X ∩ Y) : Set), f ⟨x.val, by aesop⟩ = g ⟨x.val, by aesop⟩) :
     ∃! h : Function (X ∪ Y) Z, (h ○ Function.inclusion (SetTheory.Set.subset_union_left X Y) = f)
-    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by sorry
-  -- h在X-Y上定义为f, 在其余部分定义为g即可
+    ∧ (h ○ Function.inclusion (SetTheory.Set.subset_union_right X Y) = g) := by
+  let h' : Function (X ∪ Y) Z := mk_fn fun x ↦ if h : x.val ∈ X \ Y then f ⟨x.val, by aesop⟩ else g ⟨x.val, by aesop⟩
+  use h'
+  split_ands
+  · rw [eq_iff]
+    intro x
+    have := x.property
+    unfold h'; simp
+    aesop
+  · rw [eq_iff]
+    intro x
+    have := x.property
+    unfold h'; simp
+    intro _ hq
+    contradiction
+  · rintro h ⟨h1, h2⟩
+    rw [eq_iff]
+    intro x
+    unfold h'
+    rw [← h1, ← h2]
+    simp
 
 end Chapter3
