@@ -178,4 +178,68 @@ theorem SetTheory.Set.example_3_4_9 (F : Object) :
   map_tacs [left; (right; left); (right; right; left); (right; right; right)]
   all_goals ext ⟨_, hx⟩; simp at hx; grind
 
+/--
+引理 3.4.9
+
+设`X`是一个集合，那么`{Y : Y ⊆ X}`是一个集合
+-/
+def SetTheory.Set.powerset (X : Set) : Set :=
+  (({0, 1} ^ X) : Set).replace (P := fun x y ↦ ∃ f : X → ({0, 1} : Set), f = x.val ∧ y = preimage f {1}) (by simp)
+
+open Classical in
+@[simp]
+theorem SetTheory.Set.mem_powerset {X : Set} (x : Object) :
+    x ∈ powerset X ↔ ∃ Y : Set, x = Y ∧ Y ⊆ X := by
+  constructor
+  · intro h
+    rw [powerset, replacement_axiom] at h
+    obtain ⟨_, ⟨f, hf⟩⟩ := h
+    use preimage f {1}
+    exact ⟨hf.2, preimage_in_domain _ _⟩
+  · rintro ⟨Y, ⟨h1, h2⟩⟩
+    rw [powerset, replacement_axiom]; simp
+    use fun y ↦ if y.val ∈ Y then ⟨1, by simp⟩ else ⟨0, by simp⟩
+    simp [preimage, h1]; ext y
+    aesop
+    -- constructor
+    -- · intro hy
+    --   rw [specification_axiom'']
+    --   use h2 y hy
+    --   simp [hy]
+    -- · intro hy
+    --   obtain ⟨_, h⟩ := (specification_axiom'' _ _).mp hy
+    --   split at h
+    --   · assumption
+    --   · simp at h
+
+theorem SetTheory.Set.exists_powerset (X : Set) :
+    ∃ (Z : Set), ∀ x, x ∈ Z ↔ ∃ Y : Set, x = Y ∧ Y ⊆ X := by
+  use powerset X; apply mem_powerset
+
+/--
+注 3.4.10
+-/
+theorem SetTheory.Set.powerset_of_triple (a b c x : Object) :
+    x ∈ powerset {a, b, c}
+    ↔ x = (∅ : Set)
+    ∨ x = ({a} : Set)
+    ∨ x = ({b} : Set)
+    ∨ x = ({c} : Set)
+    ∨ x = ({a, b} : Set)
+    ∨ x = ({a, c} : Set)
+    ∨ x = ({b, c} : Set)
+    ∨ x = ({a, b, c} : Set) := by
+  simp only [mem_powerset, subset_def, mem_triple]
+  refine ⟨?_, by aesop⟩
+  rintro ⟨Y, rfl, hY⟩; by_cases a ∈ Y <;> by_cases b ∈ Y <;> by_cases c ∈ Y
+  on_goal 8 => left
+  on_goal 4 => right; left
+  on_goal 6 => right; right; left
+  on_goal 7 => right; right; right; left
+  on_goal 2 => right; right; right; right; left
+  on_goal 3 => right; right; right; right; right; left
+  on_goal 5 => right; right; right; right; right; right; left
+  on_goal 1 => right; right; right; right; right; right; right
+  all_goals congr; ext; simp; grind
+
 end Chapter3
