@@ -84,13 +84,13 @@ theorem SetTheory.Set.union_exists (h : axiom_of_universal_specification) (A B :
   obtain ⟨Ω, _⟩ := h (fun y ↦ y ∈ A ∨ y ∈ B)
   use Ω
 
-theorem SetTheory.Set.specify_exists (h : axiom_of_universal_specification) (A : Set) (P : A → Prop):
+theorem SetTheory.Set.specify_exists (h : axiom_of_universal_specification) (A : Set) (P : A → Prop) :
     ∃ (Z : Set), ∀ z, z ∈ Z ↔ ∃ h : z ∈ A, P ⟨z, h⟩ := by
   obtain ⟨Ω, _⟩ := h (fun y ↦ ∃ h : y ∈ A, P ⟨y, h⟩)
   use Ω
 
 theorem SetTheory.Set.replace_exists (h : axiom_of_universal_specification) (A : Set)
-  (P : A → Object → Prop) (hP : ∀ x y y', P x y ∧ P x y' → y = y'):
+  (P : A → Object → Prop) (_hP : ∀ x y y', P x y ∧ P x y' → y = y') :
     ∃ (Z : Set), ∀ y, y ∈ Z ↔ ∃ a : A, P a y := by
   obtain ⟨Ω, _⟩ := h (fun y ↦ ∃ a : A, P a y)
   use Ω

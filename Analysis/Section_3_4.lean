@@ -242,4 +242,301 @@ theorem SetTheory.Set.powerset_of_triple (a b c x : Object) :
   on_goal 1 => right; right; right; right; right; right; right
   all_goals congr; ext; simp; grind
 
+/--
+公理 3.11 并集
+
+设`A`是一个集合，并且`A`中的每一个元素本身也是一个集合。那么存在一个集合`∪A`，它的元素恰好是`A`的元素的元素。于是对任意的对象`x`,
+`x ∈ ⋃A ↔ ∃ S ∈ A, x ∈ S`
+-/
+theorem SetTheory.Set.union_axiom (A : Set) (x : Object) :
+    x ∈ union A ↔ ∃ (S : Set), x ∈ S ∧ (S : Object) ∈ A := SetTheory.union_axiom A x
+
+/--
+例 3.4.11
+-/
+theorem SetTheory.Set.example_3_4_12 :
+    union {(({2, 3} : Set) : Object), (({3, 4} : Set) : Object), (({4, 5} : Set) : Object)} = {2, 3, 4, 5} := by
+  ext x
+  rw [union_axiom]
+  refine ⟨?_, by aesop⟩
+  rintro ⟨S, ⟨xS, h⟩⟩
+  simp at h; simp
+  obtain (h | h | h) := h <;> subst h <;>
+  simp at xS <;> obtain (xS | xS) := xS
+  on_goal 1 => left
+  on_goal 2 => right; left
+  on_goal 3 => right; left
+  on_goal 4 => right; right; left
+  on_goal 5 => right; right; left
+  on_goal 6 => right; right; right
+  all_goals assumption
+
+theorem SetTheory.Set.union_eq (A : Set) :
+    (union A : _root_.Set Object) =
+    ⋃₀ {S : _root_.Set Object | ∃ S' : Set, S = S' ∧ (S' : Object) ∈ A} := by
+  ext; simp [union_axiom, Set.mem_sUnion]; aesop
+
+abbrev SetTheory.Set.iUnion (I : Set) (A : I → Set) : Set :=
+  union (I.replace (P := fun a S ↦ S = A a) (by intro _ _ _ ⟨h1, h2⟩; exact h1.trans h2.symm))
+
+theorem SetTheory.Set.mem_iUnion {I : Set} (A : I → Set) (x : Object) :
+    x ∈ iUnion I A ↔ ∃ a : I, x ∈ A a := by
+  rw [union_axiom]; constructor
+  · simp_all [replacement_axiom]
+  grind [replacement_axiom]
+
+open Classical in
+noncomputable abbrev SetTheory.Set.index_example : ({1, 2, 3} : Set) → Set :=
+  fun i ↦ if i.val = 1 then {2, 3} else if i.val = 2 then {3, 4} else {4, 5}
+
+theorem SetTheory.Set.iUnion_example : iUnion {1, 2, 3} index_example = {2, 3, 4, 5} := by
+  apply ext; intros; simp [mem_iUnion, index_example, Insert.insert]
+  refine ⟨by aesop, ?_⟩; rintro (_ | _ | _); map_tacs [use 1; use 2; use 3]
+  all_goals aesop
+
+theorem SetTheory.Set.iUnion_eq (I : Set) (A : I → Set) :
+    (iUnion I A : _root_.Set Object) = ⋃ α, (A α : _root_.Set Object) := by
+  ext; simp [mem_iUnion]
+
+noncomputable abbrev SetTheory.Set.nonempty_choose {I : Set} (hI : I ≠ ∅) : I :=
+  ⟨(nonempty_def hI).choose, (nonempty_def hI).choose_spec⟩
+
+abbrev SetTheory.Set.iInter' (I : Set) (β : I) (A : I → Set) : Set :=
+  (A β).specify (P := fun x ↦ ∀ α : I, x.val ∈ A α)
+
+noncomputable abbrev SetTheory.Set.iInter (I : Set) (hI : I ≠ ∅) (A : I → Set) : Set :=
+  iInter' I (nonempty_choose hI) A
+
+theorem SetTheory.Set.mem_iInter {I : Set} (hI : I ≠ ∅) (A : I → Set) (x : Object) :
+    x ∈ iInter I hI A ↔ ∀ α : I, x ∈ A α := by
+  constructor
+  · simp [specification_axiom'']
+  · intro h; simp
+    exact ⟨h _, by intros; exact h _⟩
+
+/--
+习题 3.4.1
+-/
+theorem SetTheory.Set.preimage_eq_image_of_inv {X Y V : Set} (f : X → Y) (f_inv : Y → X)
+  (hf : Function.LeftInverse f_inv f ∧ Function.RightInverse f_inv f) (hV : V ⊆ Y) :
+    image f_inv V = preimage f V := by
+  ext x; constructor
+  · intro h
+    simp at h
+    obtain ⟨a, ⟨aY, rfl⟩, _⟩ := h
+    simp
+    use (f_inv ⟨a, aY⟩).property
+    rwa [hf.2]
+  · intro h
+    simp at h
+    obtain ⟨xX, h⟩ := h
+    simp
+    use f ⟨x, xX⟩
+    constructor
+    · use hV _ h; rw [hf.1]
+    · assumption
+
+/--
+习题 3.4.2
+-/
+theorem SetTheory.Set.preimage_of_image {X Y : Set} (f : X → Y) (S : Set) (hS : S ⊆ X) :
+    S ⊆ preimage f (image f S) := by
+  intro x xS; simp
+  use hS _ xS
+  use x; constructor
+  · use hS _ xS
+  · assumption
+
+theorem SetTheory.Set.image_of_preimage {X Y : Set} (f : X → Y) (U : Set) :
+    image f (preimage f U) ⊆ U := by
+  intro _ h; simp at h
+  obtain ⟨_, _, h1, _, h2⟩ := h
+  rwa [h1] at h2
+
+theorem SetTheory.Set.preimage_of_image_of_preimage {X Y : Set} (f : X → Y) (U : Set) :
+    preimage f U = preimage f (image f (preimage f U)) := by
+  ext x; constructor
+  · intro h
+    exact preimage_of_image _ _ (preimage_in_domain _ _) _ h
+  · intro h
+    simp at h
+    obtain ⟨xX, _, _, h1, _, h2⟩ := h
+    simp; use xX
+    rwa [h1] at h2
+
+theorem SetTheory.Set.image_of_preimage_of_image {X Y : Set} (f : X → Y) (S : Set) :
+    image f S = image f (preimage f (image f S)) := by
+  ext x; constructor
+  · intro h
+    simp at h
+    obtain ⟨a, ⟨aX, _⟩, _⟩ := h
+    simp; use a, aX; split_ands
+    · assumption
+    · assumption
+    · use a; constructor
+      · use aX
+      · assumption
+  · intro h
+    exact image_of_preimage _ _ _ h
+
+/--
+习题 3.4.3
+-/
+theorem SetTheory.Set.image_of_inter {X Y : Set} (f : X → Y) (A B : Set) :
+    image f (A ∩ B) ⊆ (image f A) ∩ (image f B) := by
+  intro x h
+  simp at h; simp
+  obtain ⟨a, ⟨aX, rfl⟩, aA, aB⟩ := h
+  constructor <;>
+  · use a; constructor
+    · use aX
+    · assumption
+
+theorem SetTheory.Set.image_of_diff {X Y : Set} (f : X → Y) (A B : Set) :
+    (image f A) \ (image f B) ⊆ image f (A \ B) := by
+  intro x h
+  simp at h; simp
+  obtain ⟨⟨a, ⟨aX, rfl⟩, aA⟩, h⟩ := h
+  use a; constructor
+  · use aX
+  · exact ⟨aA, h _ aX rfl⟩
+
+theorem SetTheory.Set.image_of_union {X Y : Set} (f : X → Y) (A B : Set) :
+    image f (A ∪ B) = (image f A) ∪ (image f B) := by
+  ext x; simp; constructor
+  · rintro ⟨a, ⟨aX, rfl⟩, (h | h)⟩
+    · left; use a; constructor; use aX; assumption
+    · right; use a; constructor; use aX; assumption
+  · rintro (⟨a, ⟨aX, rfl⟩, aA⟩ | ⟨a, ⟨aX, rfl⟩, aB⟩)
+    · use a; constructor; use aX; exact Or.inl aA
+    · use a; constructor; use aX; exact Or.inr aB
+
+def SetTheory.Set.image_of_inter' : Decidable (∀ X Y : Set, ∀ f : X → Y, ∀ A B : Set, image f (A ∩ B) = (image f A) ∩ (image f B)) := by
+  apply isFalse
+  push Not
+  use Nat, Nat, fun x ↦ 2, {0}, {1}
+  by_contra h
+  have : image (fun (x : Nat) ↦ (2 : Nat)) {0} ∩ image (fun (x : Nat) ↦ (2 : Nat)) {1} = {2} := by
+    ext x; constructor
+    · intro hx; aesop
+    · intro h
+      simp at h
+      simp; constructor <;> constructor
+      · exact h.symm
+      · use (0 : Nat).val, (0 : Nat).property
+        simp
+      · exact h.symm
+      · use (1 : Nat).val, (1 : Nat).property
+        simp
+  rw [this] at h
+  have : image (fun (x : Nat) ↦ (2 : Nat)) (({0} : Set) ∩ ({1} : Set)) = ∅ := by
+    rw [show ({0} : Set) ∩ ({1} : Set) = ∅ by aesop]; aesop
+  rw [this] at h
+  have : 2 ∈ (∅ : Set) := by rw [h]; simp
+  simp at this
+
+def SetTheory.Set.image_of_diff' : Decidable (∀ X Y : Set, ∀ f : X → Y, ∀ A B : Set, image f (A \ B) = (image f A) \ (image f B)) := by
+  apply isFalse
+  push Not
+  use Nat, Nat, fun x ↦ 2, {0, 1}, {1}
+  by_contra h
+  have : image (fun (x : Nat) ↦ (2 : Nat)) {0, 1} \ image (fun (x : Nat) ↦ (2 : Nat)) {1} = ∅ := by
+    ext x; constructor <;> intro h <;> simp at h
+    obtain ⟨⟨h1, _⟩, h2⟩ := h
+    have := h2 h1 (1 : Nat).val (1 : Nat).property
+    simp at this
+  rw [this] at h
+  have : image (fun (x : Nat) ↦ (2 : Nat)) ({0, 1} \ {1}) = {2} := by
+    rw [show ({0, 1} : Set) \ {1} = {0} by aesop]
+    ext x; constructor <;> intro h <;> simp at h
+    · rw [h.1.symm]; simp
+    · rw [h]; simp; use (0 : Nat).val, (0 : Nat).property; simp
+  rw [this] at h
+  have : 2 ∈ (∅ : Set) := by rw [← h]; simp
+  simp at this
+
+/--
+习题 3.4.4
+-/
+theorem SetTheory.Set.preimage_of_inter {X Y : Set} (f : X → Y) (A B : Set) :
+    preimage f (A ∩ B) = (preimage f A) ∩ (preimage f B) := by
+  ext x; constructor
+  · intro h
+    simp at h; simp
+    obtain ⟨xX, _, _⟩ := h
+    constructor
+    · use xX
+    · use xX
+  · intro h
+    simp at h; simp
+    obtain ⟨⟨_, h1⟩, ⟨_, h2⟩⟩ := h
+    constructor
+    · exact ⟨h1, h2⟩
+    · assumption
+
+theorem SetTheory.Set.preimage_of_union {X Y : Set} (f : X → Y) (A B : Set) :
+    preimage f (A ∪ B) = (preimage f A) ∪ (preimage f B) := by
+  ext x; constructor
+  · intro h
+    simp at h; simp
+    obtain ⟨xX, (h | h)⟩ := h
+    · left; use xX
+    · right; use xX
+  · intro h
+    simp at h; simp
+    obtain (⟨xX, h⟩ | ⟨xX, h⟩) := h
+    · use xX; left; assumption
+    · use xX; right; assumption
+
+theorem SetTheory.Set.preimage_of_diff {X Y : Set} (f : X → Y) (A B : Set) :
+    preimage f (A \ B) = (preimage f A) \ (preimage f B) := by
+  ext x; constructor
+  · intro h
+    simp at h; simp
+    obtain ⟨xX, h1, h2⟩ := h
+    constructor
+    · use xX
+    · intro _; assumption
+  · intro h
+    simp at h; simp
+    obtain ⟨⟨xX, h1⟩, h2⟩ := h
+    use xX; constructor
+    · assumption
+    · exact h2 _
+
+/--
+习题 3.4.5
+-/
+theorem SetTheory.Set.image_preimage_of_surj {X Y : Set} (f : X → Y) :
+    (∀ S, S ⊆ Y → image f (preimage f S) = S) ↔ Function.Surjective f := by
+  constructor
+  · intro h y
+    have : y.val ∈ image f (preimage f Y) := by aesop
+    simp at this
+    obtain ⟨x, xX, _, _, _⟩ := this
+    use ⟨x, xX⟩; aesop
+  · intro fSurj _ hS
+    ext x; constructor
+    · intro h
+      exact image_of_preimage _ _ _ h
+    · intro h; simp
+      obtain ⟨a, ha⟩ := fSurj ⟨x, hS _ h⟩
+      use a, a.property; aesop
+
+theorem SetTheory.Set.preimage_image_of_inj {X Y : Set} (f : X → Y) :
+    (∀ S, S ⊆ X → preimage f (image f S) = S) ↔ Function.Injective f := by
+  constructor
+  · intro h x x' hf
+    have : x.val ∈ preimage f (image f {x'.val}) := by aesop
+    rw [h] at this
+    aesop; intro y hy; simp at hy; rw [hy]; exact x'.property
+  · intro fInj _ hS
+    ext x; constructor
+    · intro h; simp at h
+      obtain ⟨xX, a, ⟨aX, hf⟩, aS⟩ := h
+      have := fInj (show f ⟨a, aX⟩ = f ⟨x, xX⟩ by aesop)
+      aesop
+    · intro h
+      exact preimage_of_image _ _ hS _ h
+
 end Chapter3
