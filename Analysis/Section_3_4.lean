@@ -539,4 +539,184 @@ theorem SetTheory.Set.preimage_image_of_inj {X Y : Set} (f : X → Y) :
     · intro h
       exact preimage_of_image _ _ hS _ h
 
+/--
+习题 3.4.7
+-/
+@[simp]
+lemma SetTheory.Set.mem_powerset' {S S' : Set} : (S' : Object) ∈ S.powerset ↔ S' ⊆ S := by
+  simp [mem_powerset]
+
+lemma SetTheory.Set.mem_union_powerset_replace_iff {S : Set} {P : S.powerset → Object → Prop} {hP : _} {x : Object} :
+    x ∈ union (S.powerset.replace (P := P) hP) ↔
+    ∃ (S' : S.powerset) (U : Set), P S' U ∧ x ∈ U := by
+  grind [union_axiom, replacement_axiom]
+
+theorem SetTheory.Set.partial_functions {X Y : Set} :
+    ∃ Z : Set, ∀ F : Object, F ∈ Z ↔ ∃ X' Y' : Set, X' ⊆ X ∧ Y' ⊆ Y ∧ ∃ f : X' → Y', F = f := by
+  let U (x : X.powerset) := union (Y.powerset.replace (P :=
+      fun y W ↦ ∃ X' Y' : Set, X' = x.val ∧ Y' = y.val ∧ W = pow Y' X') (by aesop))
+  use union (X.powerset.replace (P := fun x W ↦ W = U x) (by aesop))
+  intro F; constructor
+  · intro hF
+    rw [mem_union_powerset_replace_iff] at hF
+    obtain ⟨X', _, _, hF⟩ := hF
+    have hF : F ∈ U X' := by aesop
+    rw [mem_union_powerset_replace_iff] at hF
+    obtain ⟨Y', U', ⟨x, y, h1, h2, _⟩, h3⟩ := hF
+    use x, y; split_ands
+    · have : (x : Object) ∈ X.powerset := by
+        rw [h1]; exact X'.property
+      simp at this; assumption
+    · have : (y : Object) ∈ Y.powerset := by
+        rw [h2]; exact Y'.property
+      simp at this; assumption
+    · rw [show U' = y ^ x by aesop] at h3
+      simp at h3
+      obtain ⟨f, hf⟩ := h3
+      use f; exact hf.symm
+  · intro h
+    obtain ⟨X', Y', h1, h2, ⟨f, h3⟩⟩ := h
+    rw [mem_union_powerset_replace_iff]
+    rw [← mem_powerset'] at h1 h2
+    use ⟨X', h1⟩, U ⟨X', h1⟩
+    simp; rw [mem_union_powerset_replace_iff]
+    use ⟨Y', h2⟩, Y' ^ X'
+    constructor
+    · use X', Y'
+      exact ⟨rfl, rfl, by aesop⟩
+    · rw [powerset_axiom, h3]
+      use f
+
+/--
+习题 3.4.8
+
+仅可使用公理3.1, 3.3和3.11
+-/
+theorem SetTheory.Set.union_pair_exists (X Y : Set) : ∃ Z : Set, ∀ x, x ∈ Z ↔ (x ∈ X ∨ x ∈ Y) := by
+  use union {(X : Object), (Y : Object)}
+  intro _
+  rw [union_axiom]
+  constructor
+  · rintro ⟨S, _, hS⟩
+    -- 虽然mem_pair的证明用到了公理3.4，但其结论实际上是课本上公理3.3的内容
+    rw [mem_pair] at hS
+    obtain (hS | hS) := hS
+    left; rwa [show X = S by aesop]
+    right; rwa [show Y = S by aesop]
+  · rintro (h | h)
+    use X; simpa
+    use Y; simpa
+
+/--
+习题 3.4.9
+-/
+theorem SetTheory.Set.iInter'_insensitive {I : Set} (β β' : I) (A : I → Set) :
+    iInter' I β A = iInter' I β' A := by
+  ext x; constructor <;> intro _ <;> simp_all
+
+/--
+习题 3.4.10
+-/
+theorem SetTheory.Set.union_iUnion {I J : Set} (A : (I ∪ J : Set) → Set) :
+    iUnion I (fun α ↦ A ⟨α.val, by simp [α.property]⟩)
+    ∪ iUnion J (fun α ↦ A ⟨α.val, by simp [α.property]⟩)
+    = iUnion (I ∪ J) A := by
+  ext; constructor
+  · intro h
+    rw [mem_union] at h
+    simp [mem_iUnion] at h
+    simp [mem_iUnion]
+    aesop
+  · intro h
+    rw [mem_union]
+    simp [mem_iUnion] at h
+    simp [mem_iUnion]
+    aesop
+
+theorem SetTheory.Set.union_of_nonempty {I J : Set} (hI : I ≠ ∅) (_hJ : J ≠ ∅) : I ∪ J ≠ ∅ := by
+  by_contra h
+  obtain ⟨x, hx⟩ := nonempty_def hI
+  have : x ∈ I ∪ J := by simp [hx]
+  rw [h] at this
+  have := not_mem_empty x
+  contradiction
+
+theorem SetTheory.Set.inter_iInter {I J : Set} (hI : I ≠ ∅) (hJ : J ≠ ∅) (A : (I ∪ J : Set) → Set) :
+    iInter I hI (fun α ↦ A ⟨α.val, by simp [α.property]⟩)
+    ∩ iInter J hJ (fun α ↦ A ⟨α.val, by simp [α.property]⟩)
+    = iInter (I ∪ J) (union_of_nonempty hI hJ) A := by
+  ext; constructor
+  · intro h
+    rw [mem_inter] at h
+    simp only [mem_iInter] at h
+    simp only [mem_iInter]
+    intro α
+    obtain ⟨h1, h2⟩ := h
+    have := α.property
+    rw [mem_union] at this
+    obtain (h | h) := this
+    · exact h1 ⟨α, h⟩
+    · exact h2 ⟨α, h⟩
+  · intro h
+    rw [mem_inter]
+    simp only [mem_iInter] at h
+    simp only [mem_iInter]
+    constructor <;> intro α <;> exact h _
+
+/--
+习题 3.4.11
+-/
+theorem SetTheory.Set.compl_iUnion {X I : Set} (hI : I ≠ ∅) (A : I → Set) :
+    X \ iUnion I A = iInter I hI (fun α ↦ X \ A α) := by
+  ext x; constructor
+  · intro h
+    rw [mem_sdiff] at h
+    rw [mem_iInter]
+    intro α
+    rw [mem_sdiff]
+    obtain ⟨h1, h2⟩ := h
+    constructor
+    · assumption
+    · by_contra h'
+      have : x ∈ I.iUnion A := by
+        rw [mem_iUnion]; use α
+      contradiction
+  · intro h
+    rw [mem_iInter] at h
+    rw [mem_sdiff]
+    obtain ⟨α, hα⟩ := nonempty_def hI
+    have h' := h ⟨α, hα⟩
+    rw [mem_sdiff] at h'
+    constructor
+    · exact h'.1
+    · by_contra h
+      rw [mem_iUnion] at h
+      obtain ⟨α, hα⟩ := h
+      have := h α
+      rw [mem_sdiff] at this
+      have := this.2
+      contradiction
+
+theorem SetTheory.Set.compl_iInter {X I : Set} (hI : I ≠ ∅) (A : I → Set) :
+    X \ iInter I hI A = iUnion I (fun α ↦ X \ A α) := by
+  ext x; constructor
+  · intro h
+    rw [mem_sdiff] at h
+    rw [mem_iUnion]
+    obtain ⟨h1, h2⟩ := h
+    by_contra h'
+    simp_all
+  · intro h
+    rw [mem_iUnion] at h
+    obtain ⟨α, hα⟩ := h
+    rw [mem_sdiff] at hα
+    obtain ⟨h1, h2⟩ := hα
+    rw [mem_sdiff]
+    constructor
+    · assumption
+    · by_contra h'
+      rw [mem_iInter] at h'
+      have := h' α
+      contradiction
+
 end Chapter3
