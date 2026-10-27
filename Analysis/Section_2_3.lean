@@ -6,8 +6,8 @@ namespace Chapter2
 /--
 定义 2.3.1 自然数的乘法
 
-令`m`表示任意一个自然数。我们定义`0 × m := 0`来表示把`0`乘到`m`上。
-现在归纳性地假设已经定义了如何把`n`乘到`m`上，那么我们可以通过定义`(n++) × m := (n × m) + m`把`n++`乘到`m`上。
+令$`m`表示任意一个自然数。我们定义$`0 × m := 0`来表示把$`0`乘到$`m`上。
+现在归纳性地假设已经定义了如何把$`n`乘到$`m`上，那么我们可以通过定义$`(n++) × m := (n × m) + m`把$`n++`乘到$`m`上。
 -/
 abbrev Nat.mul (n m : Nat) : Nat := Nat.recurse (fun _ prod ↦ prod + m) 0 n
 
@@ -42,7 +42,7 @@ lemma Nat.mul_succ (n m : Nat) : n * m++ = n * m + n := by
 /--
 引理 2.3.2 乘法是可交换的
 
-令`n`和`m`表示任意两个自然数，那么有`n × m = m × n`成立。
+令$`n`和$`m`表示任意两个自然数，那么有$`n × m = m × n`成立。
 -/
 lemma Nat.mul_comm (n m : Nat) : n * m = m * n := by
   revert n; apply induction
@@ -66,8 +66,8 @@ lemma Nat.pos_mul_pos {n m : Nat} (h₁ : n.IsPos) (h₂ : m.IsPos) : (n * m).Is
 /--
 引理 2.3.3 正自然数没有零因子
 
-设`n, m`为自然数。那么`n × m = 0`当且仅当`n`和`m`至少有一个为零。
-特别地，如果`n`和`m`均为正的，那么`nm`也是正的。
+设$`n, m`为自然数。那么$`n × m = 0`当且仅当$`n`和$`m`至少有一个为零。
+特别地，如果$`n`和$`m`均为正的，那么$`nm`也是正的。
 -/
 lemma Nat.mul_eq_zero (n m : Nat) : n * m = 0 ↔ n = 0 ∨ m = 0 := by
   constructor
@@ -86,7 +86,7 @@ lemma Nat.mul_eq_zero (n m : Nat) : n * m = 0 ↔ n = 0 ∨ m = 0 := by
 /--
 命题 2.3.4 分配律
 
-对于任意自然数`a, b, c`，`a(b + c) = ab + ac`成立。
+对于任意自然数$`a, b, c`，$`a(b + c) = ab + ac`成立。
 -/
 theorem Nat.mul_add (a b c : Nat) : a * (b + c) = a * b + a * c := by
   revert c; apply induction
@@ -99,7 +99,7 @@ theorem Nat.mul_add (a b c : Nat) : a * (b + c) = a * b + a * c := by
 /--
 命题 2.3.4 分配律
 
-对于任意自然数`a, b, c`，`(a + b)c = ac + bc`成立。
+对于任意自然数$`a, b, c`，$`(a + b)c = ac + bc`成立。
 -/
 theorem Nat.add_mul (a b c : Nat) : (a + b) * c = a * c + b * c := by
   simp only [mul_comm, mul_add]
@@ -107,7 +107,7 @@ theorem Nat.add_mul (a b c : Nat) : (a + b) * c = a * c + b * c := by
 /--
 命题 2.3.5 乘法是可结合的
 
-对任意自然数`a, b, c`，`(a × b) × c = a × (b × c)`均成立。
+对任意自然数$`a, b, c`，$`(a × b) × c = a × (b × c)`均成立。
 -/
 theorem Nat.mul_assoc (a b c : Nat) : (a * b) * c = a * (b * c) := by
   revert a; apply induction
@@ -130,7 +130,7 @@ example (a b c d : Nat) : (a + b) * 1 * (c + d) = d * b + a * c + c * b + a * d 
 /--
 命题 2.3.6 乘法保持序不变
 
-如果`a, b`是满足`a < b`的自然数，并且`c`是正的，那么`ac < bc`
+如果$`a, b`是满足$`a < b`的自然数，并且$`c`是正的，那么$`ac < bc`
 -/
 theorem Nat.mul_lt_mul_of_pos_right {a b c : Nat} (h : a < b) (hc : c.IsPos) : a * c < b * c := by
   rw [lt_iff_add_pos] at h
@@ -144,7 +144,7 @@ theorem Nat.mul_lt_mul_of_pos_right {a b c : Nat} (h : a < b) (hc : c.IsPos) : a
 /--
 命题 2.3.6 乘法保持序不变
 
-如果`a, b`是满足`a > b`的自然数，并且`c`是正的，那么`ac > bc`
+如果$`a, b`是满足$`a > b`的自然数，并且$`c`是正的，那么$`ac > bc`
 -/
 theorem Nat.mul_gt_mul_of_pos_right {a b c : Nat} (h : a > b) (hc : c.IsPos) :
     a * c > b * c := mul_lt_mul_of_pos_right h hc
@@ -152,7 +152,7 @@ theorem Nat.mul_gt_mul_of_pos_right {a b c : Nat} (h : a > b) (hc : c.IsPos) :
 /--
 命题 2.3.6 乘法保持序不变
 
-如果`a, b`是满足`a < b`的自然数，并且`c`是正的，那么`ca < cb`
+如果$`a, b`是满足$`a < b`的自然数，并且$`c`是正的，那么$`ca < cb`
 -/
 theorem Nat.mul_lt_mul_of_pos_left {a b c : Nat} (h : a < b) (hc : c.IsPos) : c * a < c * b := by
   simp [mul_comm]
@@ -161,7 +161,7 @@ theorem Nat.mul_lt_mul_of_pos_left {a b c : Nat} (h : a < b) (hc : c.IsPos) : c 
 /--
 命题 2.3.6 乘法保持序不变
 
-如果`a, b`是满足`a > b`的自然数，并且`c`是正的，那么`ca > cb`
+如果$`a, b`是满足$`a > b`的自然数，并且$`c`是正的，那么$`ca > cb`
 -/
 theorem Nat.mul_gt_mul_of_pos_left {a b c : Nat} (h : a > b) (hc : c.IsPos) :
     c * a > c * b := mul_lt_mul_of_pos_left h hc
@@ -169,7 +169,7 @@ theorem Nat.mul_gt_mul_of_pos_left {a b c : Nat} (h : a > b) (hc : c.IsPos) :
 /--
 推论 2.3.7 消去律
 
-设`a, b, c`是自然数，满足`ac = bc`且`c`不为零，那么`a = b`
+设$`a, b, c`是自然数，满足$`ac = bc`且$`c`不为零，那么$`a = b`
 -/
 lemma Nat.mul_cancel_right {a b c : Nat} (h : a * c = b * c) (hc : c.IsPos) : a = b := by
   have := trichotomous a b
@@ -217,8 +217,8 @@ example (a b c d : Nat) (hab : a ≤ b) : c * a * d ≤ c * b * d := by
 /--
 命题 2.3.9 欧几里得除法（带余除法）
 
-设`n`是一个自然数，`q`表示一个正自然数，那么存在自然数`m`和`r`使得`0 ≤ r < q`并且`n = mq + r`。
-也就是说，我们可以用一个正自然数`q`去除一个自然数`n`，从而得到商`m`（另一个自然数）和余数`r`（比`q`小）
+设$`n`是一个自然数，$`q`表示一个正自然数，那么存在自然数$`m`和$`r`使得$`0 ≤ r < q`并且$`n = mq + r`。
+也就是说，我们可以用一个正自然数$`q`去除一个自然数$`n`，从而得到商$`m`（另一个自然数）和余数$`r`（比$`q`小）
 -/
 theorem Nat.exists_div_mod (n : Nat) {q : Nat} (hq : q.IsPos) :
     ∃ m r : Nat, 0 ≤ r ∧ r < q ∧ n = m * q + r := by
@@ -250,8 +250,8 @@ theorem Nat.exists_div_mod (n : Nat) {q : Nat} (hq : q.IsPos) :
 /--
 定义 2.3.11 自然数的指数运算
 
-设`m`是一个自然数。我们定义`m⁰ := 1`来表示把`m`升到`0`次幂；特别地，定义`0⁰ = 1`。
-现在递归地假设对于某个自然数`n`,`mⁿ`已经被定义了，那么我们定义`m^(n++) := mⁿ × m`
+设$`m`是一个自然数。我们定义$`m⁰ := 1`来表示把$`m`升到$`0`次幂；特别地，定义$`0⁰ = 1`。
+现在递归地假设对于某个自然数$`n`,$`mⁿ`已经被定义了，那么我们定义$`m^(n++) := mⁿ × m`
 -/
 abbrev Nat.pow (m n : Nat) : Nat := Nat.recurse (fun _ prod ↦ prod * m) 1 n
 

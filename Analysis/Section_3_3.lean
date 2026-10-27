@@ -11,8 +11,8 @@ variable [SetTheory]
 /--
 定义 3.3.1 函数
 
-设`X, Y`是集合。令`P(x, y)`表示关于对象`x ∈ X`和对象`y ∈ Y`的一个性质，
-并且`P(x, y)`满足对于任意的`x ∈ X`，恰好存在一个`y ∈ Y`使得`P(x, y)`为真（有时这被称为垂线测试）。
+设$`X, Y`是集合。令$`P(x, y)`表示关于对象$`x ∈ X`和对象$`y ∈ Y`的一个性质，
+并且$`P(x, y)`满足对于任意的$`x ∈ X`，恰好存在一个$`y ∈ Y`使得$`P(x, y)`为真（有时这被称为垂线测试）。
 -/
 @[ext]
 structure Function (X Y : Set) where
@@ -35,10 +35,10 @@ abbrev Function.mk_fn {X Y : Set} (f : X → Y) : Function X Y :=
 /--
 定义 3.3.1 函数
 
-我们定义由`P`在定义域`X`和值域`Y`上确定的函数`f : X → Y`为下述事物。
-对于给定的任意输入`x ∈ X`，`f`指定了一个输出`f(x) ∈ Y`与其对应，并且`f(x)`是使得`P(x, f(x))`为真的唯一一个对象。
-因此，对任意的`x ∈ X`和`y ∈ Y`，
-`y = f(x) ↔ P(x, y)`
+我们定义由$`P`在定义域$`X`和值域$`Y`上确定的函数$`f : X → Y`为下述事物。
+对于给定的任意输入$`x ∈ X`，$`f`指定了一个输出$`f(x) ∈ Y`与其对应，并且$`f(x)`是使得$`P(x, f(x))`为真的唯一一个对象。
+因此，对任意的$`x ∈ X`和$`y ∈ Y`，
+$`y = f(x) ↔ P(x, y)`
 -/
 theorem Function.eval {X Y : Set} (f : Function X Y) (x : X) (y : Y) : y = f x ↔ f.P x y := by
   convert ((f.unique x).choose_iff y).symm; rfl
@@ -51,10 +51,10 @@ theorem Function.eval_of {X Y : Set} (f : X → Y) (x : X) : (Function.mk_fn f) 
 例 3.3.2
 -/
 
--- 令`P(x, y)`表示性质`y = x++`
+-- 令$`P(x, y)`表示性质$`y = x++`
 abbrev P_3_3_3a : Nat → Nat → Prop := fun x y ↦ (y : ℕ) = (x : ℕ) + 1
 
--- 对任意一个`x ∈ ℕ`，恰好存在一个`y`使得`P(x, y)`为真
+-- 对任意一个$`x ∈ ℕ`，恰好存在一个$`y`使得$`P(x, y)`为真
 theorem SetTheory.Set.P_3_3_3a_existsUnique (x : Nat) : ∃! y : Nat, P_3_3_3a x y := by
   apply ExistsUnique.intro ((x + 1 : ℕ) : Nat)
   · simp [P_3_3_3a]
@@ -63,10 +63,10 @@ theorem SetTheory.Set.P_3_3_3a_existsUnique (x : Nat) : ∃! y : Nat, P_3_3_3a x
   refine (nat_equiv_symm_inj y ↑(nat_equiv.symm x + 1)).mp ?_
   simpa
 
--- 于是我们可以定义与该性质有关的一个函数`f : ℕ → ℕ`
+-- 于是我们可以定义与该性质有关的一个函数$`f : ℕ → ℕ`
 abbrev SetTheory.Set.f_3_3_3a : Function Nat Nat := Function.mk P_3_3_3a P_3_3_3a_existsUnique
 
--- 使得对任意的`x`有`f(x) = x++`
+-- 使得对任意的$`x`有$`f(x) = x++`
 theorem SetTheory.Set.f_3_3_3a_eval (x y : Nat) : y = f_3_3_3a x ↔ (y : ℕ) = (x + 1 : ℕ) :=
   Function.eval _ _ _
 
@@ -79,22 +79,22 @@ theorem SetTheory.Set.f_3_3_3a_eval'' : f_3_3_3a 4 = 5 := f_3_3_3a_eval' 4
 theorem SetTheory.Set.f_3_3_3a_eval''' (n : ℕ) : f_3_3_3a (2 * n + 3 : ℕ) = (2 * n + 4 : ℕ) := by
   convert f_3_3_3a_eval' _
 
--- 人们或许还希望定义一个与性质`P(x, y)`有关的减少函数`g`
+-- 人们或许还希望定义一个与性质$`P(x, y)`有关的减少函数$`g`
 abbrev SetTheory.Set.P_3_3_3b : Nat → Nat → Prop := fun x y ↦ (y + 1 : ℕ) = (x : ℕ)
 
--- 遗憾的是，这无法定义为一个函数，原因在于当`x = 0`时，不存在自然数`y`使得`y`增长之后的数字等于`x`
+-- 遗憾的是，这无法定义为一个函数，原因在于当$`x = 0`时，不存在自然数$`y`使得$`y`增长之后的数字等于$`x`
 theorem SetTheory.Set.not_P_3_3_3b_existsUnique : ¬ ∀ x, ∃! y : Nat, P_3_3_3b x y := by
   by_contra h
   choose _ hn _ using h (0 : Nat)
   -- have : ((0 : Nat) : ℕ) = 0 := by simp [OfNat.ofNat]
-  -- 使用`P_3_3_3b`的定义展开hn，得到`n + 1 = 0`，自然得出矛盾
+  -- 使用$`P_3_3_3b`的定义展开hn，得到$`n + 1 = 0`，自然得出矛盾
   simp [P_3_3_3b] at hn
 
--- 另外，我们能够合理地定义这样一个与性质`P(x, y)`有关的减少函数`h : ℕ \ {0} → ℕ`
+-- 另外，我们能够合理地定义这样一个与性质$`P(x, y)`有关的减少函数$`h : ℕ \ {0} → ℕ`
 abbrev SetTheory.Set.P_3_3_3c : (Nat \ {(0 : Object)} : Set) → Nat → Prop :=
   fun x y ↦ ((y + 1 : ℕ) : Object) = x
 
--- 因为利用引理2.2.10可知，当`x ∈ ℕ \ {0}`时，确实恰好存在一个自然数`y`使得`y++ = x`
+-- 因为利用引理2.2.10可知，当$`x ∈ ℕ \ {0}`时，确实恰好存在一个自然数$`y`使得$`y++ = x`
 theorem SetTheory.Set.P_3_3_3c_existsUnique (x : (Nat \ {(0 : Object)} : Set)) :
     ∃! y : Nat, P_3_3_3c x y := by
   obtain ⟨x, hx⟩ := x; simp at hx; obtain ⟨hx1, hx2⟩ := hx
@@ -127,9 +127,7 @@ theorem SetTheory.Set.f_3_3_3c_eval'' : f_3_3_3c (coe_nonzero 4 (by positivity))
 theorem SetTheory.Set.f_3_3_3c_eval''' (n : ℕ) : f_3_3_3c (coe_nonzero (2 * n + 3) (by positivity)) = (2 * n + 2 : ℕ) := by
   convert f_3_3_3c_eval' (2 * n + 2)
 
-/--
-例 3.3.3
--/
+/-- 例 3.3.3 -/
 example : ¬ ∃ f : ℝ → ℝ, ∀ x y, y = f x ↔ y ^ 2 = x := by
   by_contra h
   obtain ⟨f, hf⟩ := h; set y := f (-1)
@@ -167,7 +165,7 @@ theorem SetTheory.Set.f_3_3_5_eval (x : Nat) : f_3_3_5 x = 7 := by
 /--
 定义 3.3.7 函数的相等
 
-两个具有相同定义域和值域的函数`f : X → Y`和`g : X → Y`被称为是相等的，记作`f = g`，当且仅当对任意的`x ∈ X`均有`f(x) = g(x)`
+两个具有相同定义域和值域的函数$`f : X → Y`和$`g : X → Y`被称为是相等的，记作$`f = g`，当且仅当对任意的$`x ∈ X`均有$`f(x) = g(x)`
 -/
 theorem Function.eq_iff {X Y : Set} (f g : Function X Y) : f = g ↔ ∀ x : X, f x = g x := by
   constructor <;> intro h
@@ -211,9 +209,9 @@ theorem SetTheory.Set.empty_function_unique {X : Set} (f g : Function (∅ : Set
 /--
 定义 3.3.10 复合
 
-令`f : X → Y`和`g : Y → Z`为两个函数，并且满足`f`的值域与`g`的定义域是同一个集合。
-那么我们定义两个函数`g`和`f`的复合`g ∘ f : X → Z`为一个函数，并由下面的式子来显式定义
-`(g ∘ f)(x) := g(f(x))`
+令$`f : X → Y`和$`g : Y → Z`为两个函数，并且满足$`f`的值域与$`g`的定义域是同一个集合。
+那么我们定义两个函数$`g`和$`f`的复合$`g ∘ f : X → Z`为一个函数，并由下面的式子来显式定义
+$`(g ∘ f)(x) := g(f(x))`
 -/
 noncomputable abbrev Function.comp {X Y Z : Set} (g : Function Y Z) (f : Function X Y) :
     Function X Z := Function.mk_fn (fun x ↦ g (f x))
@@ -245,7 +243,7 @@ theorem SetTheory.Set.f_circ_g_3_3_14 :
 /--
 引理 3.3.12 复合是可结合的
 
-设`f : Z → W, g : Y → Z`和`h : X → Y`是三个函数，那么`f ∘ (g ∘ h) = (f ∘ g) ∘ h`
+设$`f : Z → W, g : Y → Z`和$`h : X → Y`是三个函数，那么$`f ∘ (g ∘ h) = (f ∘ g) ∘ h`
 -/
 theorem SetTheory.Set.comp_assoc {W X Y Z : Set} (h : Function X Y) (g : Function Y Z) (f : Function Z W) :
     f ○ (g ○ h) = (f ○ g) ○ h := by
@@ -254,11 +252,11 @@ theorem SetTheory.Set.comp_assoc {W X Y Z : Set} (h : Function X Y) (g : Functio
 /--
 定义 3.3.14 一对一函数
 
-如果函数`f`把不同的元素映射到不同的元素：
-`x ≠ x' → f(x) ≠ f(x')`
-则函数`f`是一对一的（或单射的）。即如果函数`f`满足
-`f(x) = f(x') → x = x'`
-则函数`f`是一对一的
+如果函数$`f`把不同的元素映射到不同的元素：
+$`x ≠ x' → f(x) ≠ f(x')`
+则函数$`f`是一对一的（或单射的）。即如果函数$`f`满足
+$`f(x) = f(x') → x = x'`
+则函数$`f`是一对一的
 -/
 abbrev Function.one_to_one {X Y : Set} (f : Function X Y) : Prop := ∀ x x' : X, x ≠ x' → f x ≠ f x'
 
@@ -293,8 +291,8 @@ example : Function.Injective (fun (n : ℕ) ↦ n ^ 2) := by
 /--
 注 3.3.16
 
-如果函数`f : X → Y`不是一对一的，那么在定义域`X`中可以找到两个不相等的元素`x`和`x'`使得`f(x) = f(x')`,
-因此我们能够找到被映射到同一个输出的两个输入。正因如此，我们称`f`是二对一的。
+如果函数$`f : X → Y`不是一对一的，那么在定义域$`X`中可以找到两个不相等的元素$`x`和$`x'`使得$`f(x) = f(x')`,
+因此我们能够找到被映射到同一个输出的两个输入。正因如此，我们称$`f`是二对一的。
 -/
 theorem SetTheory.Set.two_to_one {X Y : Set} {f : Function X Y} (h : ¬ f.one_to_one) :
     ∃ x x' : X, x ≠ x' ∧ f x = f x' := by
@@ -303,16 +301,14 @@ theorem SetTheory.Set.two_to_one {X Y : Set} {f : Function X Y} (h : ¬ f.one_to
 /--
 定义 3.3.17 映上函数
 
-如果`f(X) = Y`，即`Y`中每一个元素都能通过`f`对`X`中某个元素起作用得到，那么函数`f`是映上的（或满射的）
-`∀ y ∈ Y, ∃ x ∈ X, f(x) = y`
+如果$`f(X) = Y`，即$`Y`中每一个元素都能通过$`f`对$`X`中某个元素起作用得到，那么函数$`f`是映上的（或满射的）
+$`∀ y ∈ Y, ∃ x ∈ X, f(x) = y`
 -/
 abbrev Function.onto {X Y : Set} (f : Function X Y) : Prop := ∀ y : Y, ∃ x : X, f x = y
 
 theorem Function.onto_iff {X Y : Set} (f : Function X Y) : f.onto ↔ Function.Surjective f.to_fn := by rfl
 
-/--
-例 3.3.18
--/
+/-- 例 3.3.18 -/
 example : ¬ Function.Surjective (fun (n : ℤ) ↦ n ^ 2) := by
   unfold Function.Surjective; push Not
   use -1; intro a
@@ -326,7 +322,7 @@ example : Function.Surjective (fun (n : ℤ) ↦ ⟨n ^ 2, by use n⟩ : ℤ →
 /--
 定义 3.3.20 双射函数
 
-既是一对一的又是映上的函数`f : X → Y`也被称为双射函数或可逆函数。
+既是一对一的又是映上的函数$`f : X → Y`也被称为双射函数或可逆函数。
 -/
 abbrev Function.bijective {X Y : Set} (f : Function X Y) : Prop := f.one_to_one ∧ f.onto
 
@@ -359,9 +355,7 @@ abbrev h_3_3_24 : Fin 3 → ({3, 4, 5} : _root_.Set ℕ) := fun x ↦ match x wi
 
 example : Function.Bijective h_3_3_24 := by decide
 
-/--
-例 3.3.22
--/
+/-- 例 3.3.22 -/
 example : Function.Bijective (fun n ↦ ⟨n + 1, by omega⟩ : ℕ → {n : ℕ // n ≠ 0}) := by
   constructor
   · intro _ _
@@ -416,7 +410,7 @@ theorem Function.inverse_eq {X Y : Set} [Nonempty X] {f : Function X Y} (h : f.b
 /--
 习题 3.3.1
 
-使用`Function.eq_iff`证明
+使用{lean}`Function.eq_iff`证明
 -/
 theorem Function.refl {X Y : Set} (f : Function X Y) : f = f := by
   rw [eq_iff]

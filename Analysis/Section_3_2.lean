@@ -10,8 +10,8 @@ variable [SetTheory]
 /--
 公理 3.8 万有分类
 
-假设对任意的对象`x`，存在关于`x`的性质`P(x)`（于是对每一个`x`，`P(x)`要么是真命题，要么是假命题。）
-那么存在一个集合`{x : P(x)}`使得对任意对象`y`，`y ∈ {x : P(x)} ↔ P(y)`
+假设对任意的对象$`x`，存在关于$`x`的性质$`P(x)`（于是对每一个$`x`，$`P(x)`要么是真命题，要么是假命题。）
+那么存在一个集合$`{x : P(x)}`使得对任意对象$`y`，$`y ∈ {x : P(x)} ↔ P(y)`
 -/
 abbrev axiom_of_universal_specification : Prop :=
   ∀ P : Object → Prop, ∃ A : Set, ∀ x : Object, x ∈ A ↔ P x
@@ -21,30 +21,30 @@ abbrev axiom_of_universal_specification : Prop :=
 -/
 theorem Russells_paradox : ¬ axiom_of_universal_specification := by
   intro h
-  -- `x`是一个集合，并且`x ∉ x`
+  -- $`x`是一个集合，并且$`x ∉ x`
   set P : Object → Prop := fun x ↦ ∃ X : Set, x = X ∧ x ∉ X
-  -- 根据公理3.8，我们就能构造这样一个集合`Ω := {x : P(x)}`
+  -- 根据公理3.8，我们就能构造这样一个集合$`Ω := {x : P(x)}`
   -- 即由所有不包含自身的集合构成的集合
   choose Ω hΩ using h P
-  -- 现在问一个问题：`Ω`是否包含自身？
+  -- 现在问一个问题：$`Ω`是否包含自身？
   by_cases h : (Ω : Object) ∈ Ω
-    -- 如果`Ω`包含自身，那么根据定义`P(Ω)`就为真
+    -- 如果$`Ω`包含自身，那么根据定义$`P(Ω)`就为真
   · have : P (Ω : Object) := (hΩ _).mp h
-    -- 即`Ω`是一个集合且`Ω ∉ Ω`，这与假设矛盾
+    -- 即$`Ω`是一个集合且$`Ω ∉ Ω`，这与假设矛盾
     obtain ⟨Ω', ⟨hΩ1, hΩ2⟩⟩ := this
     simp at hΩ1
     rw [← hΩ1] at hΩ2
     contradiction
-  -- 如果`Ω`不包含自身，那么`P(Ω)`为真
+  -- 如果$`Ω`不包含自身，那么$`P(Ω)`为真
   have : P (Ω : Object) := by use Ω
-  -- 因此`Ω ∈ Ω`，这又导致矛盾
+  -- 因此$`Ω ∈ Ω`，这又导致矛盾
   rw [← hΩ] at this
   contradiction
 
 /--
 公理 3.9 正则公理
 
-如果`A`是一个非空集合，那么`A`中至少存在一个元素`x`满足：`x`要么不是集合，要么`x`与`A`不相交。
+如果$`A`是一个非空集合，那么$`A`中至少存在一个元素$`x`满足：$`x`要么不是集合，要么$`x`与$`A`不相交。
 -/
 theorem SetTheory.Set.axiom_of_regularity {A : Set} (h : A ≠ ∅) :
     ∃ x : A, ∀ S : Set, x.val = S → Disjoint S A := by
@@ -99,7 +99,7 @@ theorem SetTheory.Set.replace_exists (h : axiom_of_universal_specification) (A :
 习题 3.2.2
 -/
 theorem SetTheory.Set.not_mem_self (A : Set) : (A : Object) ∉ A := by
-  -- 考虑单元素集合`{A}`
+  -- 考虑单元素集合$`{A}`
   let A' : Set := {(A : Object)}
   have h : A' ≠ ∅ := by
     by_contra h
@@ -114,7 +114,7 @@ theorem SetTheory.Set.not_mem_self (A : Set) : (A : Object) ∉ A := by
 
 theorem SetTheory.Set.not_mem_mem (A B : Set) : (A : Object) ∉ B ∨ (B : Object) ∉ A := by
   by_contra! ⟨h1, h2⟩
-  -- 考虑集合`{A, B}`
+  -- 考虑集合$`{A, B}`
   let C : Set := {(A : Object), (B : Object)}
   have h : C ≠ ∅ := by
     by_contra h

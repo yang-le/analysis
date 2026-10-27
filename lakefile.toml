@@ -1,10 +1,17 @@
 name = "Analysis"
 version = "0.1.0"
 defaultTargets = ["Analysis"]
+# lintDriver = "batteries/runLinter"
 
 [leanOptions]
 pp.unicode.fun = true
 linter.unusedVariables = true
+doc.verso = true
+
+[[require]]
+name = "verso"
+git = "https://github.com/leanprover/verso"
+rev = "v4.35.0"
 
 [[require]]
 name = "mathlib"

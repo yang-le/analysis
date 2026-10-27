@@ -14,7 +14,7 @@ open SetTheory.Set
 /--
 定义 3.5.1 有序对
 
-若`x`和`y`是任意两个对象（它们有可能相等），那么我们把**有序对**`(x, y)`定义为一个把`x`作为第一个分量，`y`作为第二个分量的新对象。
+若$`x`和$`y`是任意两个对象（它们有可能相等），那么我们把*有序对*$`(x, y)`定义为一个把$`x`作为第一个分量，$`y`作为第二个分量的新对象。
 -/
 @[ext]
 structure OrderedPair where
@@ -26,8 +26,8 @@ structure OrderedPair where
 /--
 定义 3.5.1 有序对
 
-两个有序对`(x, y)`和`(x', y')`被认为是相当的，当且仅当它们的两个分量都相等，即
-`(x, y) = (x', y') ↔ (x = x' ∧ y = y')`
+两个有序对$`(x, y)`和$`(x', y')`被认为是相当的，当且仅当它们的两个分量都相等，即
+$`(x, y) = (x', y') ↔ (x = x' ∧ y = y')`
 -/
 @[simp]
 theorem OrderedPair.eq (x y x' y' : Object) :
@@ -88,10 +88,10 @@ theorem SetTheory.Set.mem_slice (x z : Object) (Y : Set) :
 /--
 定义 3.5.4 笛卡儿积
 
-如果`X`和`Y`是集合，那么我们定义**笛卡儿积**`X × Y`为第一个分量在`X`中且第二个分量在`Y`中的全体有序对的集合，因此
-`X × Y = {(x, y) : x ∈ X, y ∈ Y}`
+如果$`X`和$`Y`是集合，那么我们定义*笛卡儿积*$`X × Y`为第一个分量在$`X`中且第二个分量在$`Y`中的全体有序对的集合，因此
+$`X × Y = {(x, y) : x ∈ X, y ∈ Y}`
 或等价地，
-`a ∈ (X × Y) ↔ ∃ x ∈ X, ∃ y ∈ Y, a = (x, y)`
+$`a ∈ (X × Y) ↔ ∃ x ∈ X, ∃ y ∈ Y, a = (x, y)`
 -/
 abbrev SetTheory.Set.cartesian (X Y : Set) : Set :=
   union (X.replace (P := fun x z ↦ z = slice x Y) (by intro _ _ _ ⟨h1, h2⟩; exact h1.trans h2.symm))
@@ -152,9 +152,7 @@ noncomputable abbrev SetTheory.Set.prod_equiv_prod (X Y : Set) :
   left_inv _ := by simp
   right_inv _ := by simp
 
-/--
-例 3.5.6
--/
+/-- 例 3.5.6 -/
 example : ({1, 2} : Set) ×ˢ ({3, 4, 5} : Set) = ({
   ((mk_cartesian (1 : Nat) (3 : Nat)) : Object),
   ((mk_cartesian (1 : Nat) (4 : Nat)) : Object),
@@ -185,19 +183,19 @@ noncomputable abbrev SetTheory.Set.curry_equiv {X Y Z : Set} : (X → Y → Z) �
   right_inv _ := by simp
 
 /--
-定义 3.5.7 有序`n`元组
+定义 3.5.7 有序$`n`元组
 
-设`n`是一个自然数，**有序`n`元组**`(xᵢ)_{1 ≤ i ≤ n}`（也记作`(x₁, ⋯, xₙ)`）是由对象`x₁, ⋯, xₙ`按次序构成的一个组，
-我们把`xᵢ`称为有序`n`元组的第`i`个分量。
+设$`n`是一个自然数，*有序$`n`元组*$`(xᵢ)_{1 ≤ i ≤ n}`（也记作$`(x₁, ⋯, xₙ)`）是由对象$`x₁, ⋯, xₙ`按次序构成的一个组，
+我们把$`xᵢ`称为有序$`n`元组的第$`i`个分量。
 -/
 abbrev SetTheory.Set.tuple {I : Set} {X : I → Set} (x : ∀ i, X i) : Object :=
   ((fun i ↦ ⟨x i, by rw [mem_iUnion]; use i; exact (x i).property⟩) : I → iUnion I X)
 
 /--
-定义 3.5.7 `n`重笛卡儿积
+定义 3.5.7 $`n`重笛卡儿积
 
-如果`(Xᵢ)_{1 ≤ i ≤ n}`是集合的有序`n`元组，我们定义它们的**笛卡儿积**`Π_{1 ≤ i ≤ n} Xᵢ`（也记作`Πⁿ_{i = 1} Xᵢ`或`X₁ × ⋯ × Xₙ`）为
-`Π_{1 ≤ i ≤ n} Xᵢ := {(xᵢ)_{1 ≤ i ≤ n} : ∀ 1 ≤ i ≤ n, xᵢ ∈ Xᵢ}`
+如果$`(Xᵢ)_{1 ≤ i ≤ n}`是集合的有序$`n`元组，我们定义它们的*笛卡儿积*$`Π_{1 ≤ i ≤ n} Xᵢ`（也记作$`Πⁿ_{i = 1} Xᵢ`或$`X₁ × ⋯ × Xₙ`）为
+$$`Π_{1 ≤ i ≤ n} Xᵢ := {(xᵢ)_{1 ≤ i ≤ n} : ∀ 1 ≤ i ≤ n, xᵢ ∈ Xᵢ}`
 -/
 abbrev SetTheory.Set.iProd {I : Set} (X : I → Set) : Set :=
   ((iUnion I X) ^ I).specify (fun t ↦ ∃ x : ∀ i, X i, t = tuple x)
@@ -449,9 +447,9 @@ noncomputable abbrev SetTheory.Set.Fin.Fin_equiv_Fin (n : ℕ) : Fin n ≃ _root
 /--
 引理 3.5.12 有限选取
 
-设`n ≥ 1`是自然数，并且对任意自然数`1 ≤ i ≤ n`，令`Xᵢ`为一个非空集合。
-那么存在一个`n`元组`(xᵢ)_{1 ≤ i ≤ n}`使得对所有的`1 ≤ i ≤ n`均有`xᵢ ∈ Xᵢ`。
-换言之，如果每一个`Xᵢ`都是非空集合，那么集合`Π_{1 ≤ i ≤ n} Xᵢ`也是非空的。
+设$`n ≥ 1`是自然数，并且对任意自然数$`1 ≤ i ≤ n`，令$`Xᵢ`为一个非空集合。
+那么存在一个$`n`元组$`(xᵢ)_{1 ≤ i ≤ n}`使得对所有的$`1 ≤ i ≤ n`均有$`xᵢ ∈ Xᵢ`。
+换言之，如果每一个$`Xᵢ`都是非空集合，那么集合$`Π_{1 ≤ i ≤ n} Xᵢ`也是非空的。
 -/
 theorem SetTheory.Set.finite_choice {n : ℕ} {X : Fin n → Set} (h : ∀ i, X i ≠ ∅) : iProd X ≠ ∅ := by
   sorry

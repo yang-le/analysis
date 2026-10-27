@@ -6,8 +6,8 @@ namespace Chapter2
 /--
 定义 2.2.1 自然数的加法
 
-令`m`为一个自然数，我们定义`m`加上`0`为`0 + m := m`。
-现在递归地假设我们已经定义了如何把`m`加上`n`，那么我们把`m`加上`n++`定义为`(n++) + m := (n + m)++`。
+令$`m`为一个自然数，我们定义$`m`加上$`0`为$`0 + m := m`。
+现在递归地假设我们已经定义了如何把$`m`加上$`n`，那么我们把$`m`加上$`n++`定义为$`(n++) + m := (n + m)++`。
 -/
 abbrev Nat.add (n m : Nat) : Nat := Nat.recurse (fun _ sum ↦ sum++) m n
 
@@ -33,7 +33,7 @@ example : (2 : Nat) + 3 = 5 := by
 /--
 引理 2.2.2
 
-对任意的自然数`n`, `n + 0 = n`恒成立
+对任意的自然数$`n`, $`n + 0 = n`恒成立
 -/
 @[simp]
 lemma Nat.add_zero (n : Nat) : n + 0 = n := by
@@ -47,7 +47,7 @@ lemma Nat.add_zero (n : Nat) : n + 0 = n := by
 /--
 引理 2.2.3
 
-对任意的自然数`n`和`m`，有`n + (m++) = (n + m)++`成立。
+对任意的自然数$`n`和$`m`，有$`n + (m++) = (n + m)++`成立。
 -/
 lemma Nat.add_succ (n m : Nat) : n + (m++) = (n + m)++ := by
   revert n; apply induction
@@ -66,7 +66,7 @@ theorem Nat.succ_eq_add_one (n : Nat) : n++ = n + 1 := by
 /--
 命题 2.2.4 加法是可交换的
 
-对任意的自然数`n`和`m`，有`n + m = m + n`成立。
+对任意的自然数$`n`和$`m`，有$`n + m = m + n`成立。
 -/
 theorem Nat.add_comm (n m : Nat) : n + m = m + n := by
   revert n; apply induction
@@ -78,7 +78,7 @@ theorem Nat.add_comm (n m : Nat) : n + m = m + n := by
 /--
 命题 2.2.5 加法是可结合的
 
-对任意的自然数`a、b、c`，有`(a + b) + c = a + (b + c)`成立。
+对任意的自然数$`a、b、c`，有$`(a + b) + c = a + (b + c)`成立。
 -/
 theorem Nat.add_assoc (a b c : Nat) : (a + b) + c = a + (b + c) := by
   revert a; apply induction
@@ -89,7 +89,7 @@ theorem Nat.add_assoc (a b c : Nat) : (a + b) + c = a + (b + c) := by
 /--
 命题 2.2.6 消去律
 
-令`a、b、c`为任意三个自然数且满足`a + b = a + c`，那么`b = c`成立。
+令$`a、b、c`为任意三个自然数且满足$`a + b = a + c`，那么$`b = c`成立。
 -/
 theorem Nat.add_left_cancel (a b c : Nat) (habc : a + b = a + c) : b = c := by
   revert a; apply induction
@@ -112,7 +112,7 @@ example (a b c d : Nat) : (a + b) + (c + 0 + d) = (b + c) + (d + a) := by abel
 /--
 定义 2.2.7 正自然数
 
-称一个自然数`n`是正的，当且仅当它不等于`0`
+称一个自然数$`n`是正的，当且仅当它不等于$`0`
 -/
 def Nat.IsPos (n : Nat) : Prop := n ≠ 0
 
@@ -121,7 +121,7 @@ theorem Nat.isPos_iff (n : Nat) : n.IsPos ↔ n ≠ 0 := by rfl
 /--
 命题 2.2.8
 
-如果`a`是正的并且`b`是自然数，那么`a + b`是正的
+如果$`a`是正的并且$`b`是自然数，那么$`a + b`是正的
 -/
 theorem Nat.add_pos_left {a : Nat} (b : Nat) (ha : a.IsPos) : (a + b).IsPos := by
   revert b; apply induction
@@ -134,7 +134,7 @@ theorem Nat.add_pos_left {a : Nat} (b : Nat) (ha : a.IsPos) : (a + b).IsPos := b
 /--
 命题 2.2.8
 
-如果`a`是正的并且`b`是自然数，那么`b + a`是正的
+如果$`a`是正的并且$`b`是自然数，那么$`b + a`是正的
 -/
 theorem Nat.add_pos_right {a : Nat} (b : Nat) (ha : a.IsPos) : (b + a).IsPos := by
   grind [add_comm, add_pos_left]
@@ -142,7 +142,7 @@ theorem Nat.add_pos_right {a : Nat} (b : Nat) (ha : a.IsPos) : (b + a).IsPos := 
 /--
 推论 2.2.9
 
-如果`a`和`b`是自然数并且满足`a + b = 0`，那么`a = 0`且`b = 0`
+如果$`a`和$`b`是自然数并且满足$`a + b = 0`，那么$`a = 0`且$`b = 0`
 -/
 theorem Nat.add_eq_zero (a b : Nat) (hab : a + b = 0) : a = 0 ∧ b = 0 := by
   by_contra h
@@ -165,7 +165,7 @@ theorem Nat.add_eq_zero (a b : Nat) (hab : a + b = 0) : a = 0 ∧ b = 0 := by
 /--
 引理 2.2.10
 
-令`a`表示一个正自然数，那么恰存在一个自然数`b`使得`b++ = a`
+令$`a`表示一个正自然数，那么恰存在一个自然数$`b`使得$`b++ = a`
 -/
 lemma Nat.uniq_succ_eq (a : Nat) (ha : a.IsPos) : ∃! b, b++ = a := by
   have h : ∃ x, x++ = a := by
@@ -184,7 +184,7 @@ lemma Nat.uniq_succ_eq (a : Nat) (ha : a.IsPos) : ∃! b, b++ = a := by
 /--
 定义 2.2.11 自然数的排序
 
-令`n`和`m`表示任意两个自然数。我们称`n`大于等于`m`，并且记作`n ≥ m`或者`m ≤ n`，当且仅当存在自然数`a`使得`n = m + a`。
+令$`n`和$`m`表示任意两个自然数。我们称$`n`大于等于$`m`，并且记作$`n ≥ m`或者$`m ≤ n`，当且仅当存在自然数$`a`使得$`n = m + a`。
 -/
 instance Nat.instLE : LE Nat where
   le m n := ∃ a : Nat, n = m + a
@@ -193,7 +193,7 @@ instance Nat.instLE : LE Nat where
 /--
 定义 2.2.11 自然数的排序
 
-令`n`和`m`表示任意两个自然数。我们称`n`严格大于`m`，并且记作`n > m`或者`m < n`，当且仅当`n ≥ m`且`n ≠ m`。
+令$`n`和$`m`表示任意两个自然数。我们称$`n`严格大于$`m`，并且记作$`n > m`或者$`m < n`，当且仅当$`n ≥ m`且$`n ≠ m`。
 -/
 instance Nat.instLT : LT Nat where
   lt m n := m ≤ n ∧ m ≠ n
@@ -236,16 +236,16 @@ theorem Nat.succ_gt_self (n : Nat) : n++ > n := by
   apply add_left_cancel at h
   contradiction
 
-/-
+/--
 命题 2.2.12 自然数的序的基本性质
 
-令`a`、`b`、`c`为任意自然数，那么
-- `a ≥ a`
-- 如果`a ≥ b`并且`b ≥ c`，那么`a ≥ c`
-- 如果`a ≥ b`并且`b ≥ a`，那么`a = b`
-- `a ≥ b`当且仅当`a + c ≥ b + c`
-- `a < b`当且仅当`a++ ≤ b`
-- `a < b`当且仅当存在正自然数`d`使得`b = a + d`
+令$`a`、$`b`、$`c`为任意自然数，那么
+- $`a ≥ a`
+- 如果$`a ≥ b`并且$`b ≥ c`，那么$`a ≥ c`
+- 如果$`a ≥ b`并且$`b ≥ a`，那么$`a = b`
+- $`a ≥ b`当且仅当$`a + c ≥ b + c`
+- $`a < b`当且仅当$`a++ ≤ b`
+- $`a < b`当且仅当存在正自然数$`d`使得$`b = a + d`
 -/
 
 theorem Nat.ge_refl (a : Nat) : a ≥ a := by
@@ -255,7 +255,7 @@ theorem Nat.ge_refl (a : Nat) : a ≥ a := by
 @[refl]
 theorem Nat.le_refl (a : Nat) : a ≤ a := a.ge_refl
 
-/-- `refl`标签使得{tactic}`rfl`可以适用于不等式 -/
+/-- {attr}`refl`标签使得{tactic}`rfl`可以适用于不等式 -/
 example (a b : Nat) : a + b ≥ a + b := by rfl
 
 theorem Nat.ge_trans {a b c : Nat} (hab : a ≥ b) (hbc : b ≥ c) : a ≥ c := by
@@ -379,7 +379,7 @@ theorem Nat.zero_le (a : Nat) : 0 ≤ a := by
 /--
 命题 2.2.13 自然数的序的三歧性
 
-令`a`和`b`表示任意两个自然数，那么在下面三种表述中恰有一种表述为真：`a < b`，`a = b`，`a > b`
+令$`a`和$`b`表示任意两个自然数，那么在下面三种表述中恰有一种表述为真：$`a < b`，$`a = b`，$`a > b`
 -/
 theorem Nat.trichotomous (a b : Nat) : a < b ∨ a = b ∨ a > b := by
   revert a; apply induction
@@ -469,10 +469,10 @@ example (a b c d e : Nat) (hab : a ≤ b) (hbc : b < c) (hde : d < e) : a + d �
 /--
 命题 2.2.14 强归纳法原理
 
-令`m₀`表示一个自然数，`P(m)`表示与任意自然数`m`有关的性质。假设对任意满足`m ≥ m₀`的自然数`m`，均有如下内容成立：
-若`P(m')`对任意满足`m₀ ≤ m' < m`的自然数`m'`均为真，那么`P(m)`也为真。
-（特别地，这意味着`P(m₀)`为真，因为当`m = m₀`时，前提中的`m'`取值范围为空。）
-于是我们能够断定，对于任意满足`m ≥ m₀`的自然数`m`，`P(m)`为真。
+令$`m₀`表示一个自然数，$`P(m)`表示与任意自然数$`m`有关的性质。假设对任意满足$`m ≥ m₀`的自然数$`m`，均有如下内容成立：
+若$`P(m')`对任意满足$`m₀ ≤ m' < m`的自然数$`m'`均为真，那么$`P(m)`也为真。
+（特别地，这意味着$`P(m₀)`为真，因为当$`m = m₀`时，前提中的$`m'`取值范围为空。）
+于是我们能够断定，对于任意满足$`m ≥ m₀`的自然数$`m`，$`P(m)`为真。
 -/
 theorem Nat.strong_induction {m₀:Nat} {P: Nat → Prop}
   (hind: ∀ m, m ≥ m₀ → (∀ m', m₀ ≤ m' ∧ m' < m → P m') → P m) :
@@ -498,8 +498,8 @@ theorem Nat.strong_induction {m₀:Nat} {P: Nat → Prop}
 /--
 习题 2.2.6 逆向归纳法原理
 
-令`n`表示一个自然数，令`P(m)`是关于自然数的一个性质并且满足：只要`P(m++)`为真，`P(m)`就为真。
-假设`P(n)`也为真，证明：`P(m)`对任意满足`m ≤ n`的自然数`m`均为真。
+令$`n`表示一个自然数，令$`P(m)`是关于自然数的一个性质并且满足：只要$`P(m++)`为真，$`P(m)`就为真。
+假设$`P(n)`也为真，证明：$`P(m)`对任意满足$`m ≤ n`的自然数$`m`均为真。
 -/
 theorem Nat.backwards_induction {n : Nat} {P : Nat → Prop}
   (hind : ∀ m, P (m++) → P m) (hn : P n) :

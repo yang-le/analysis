@@ -10,9 +10,9 @@ variable [SetTheory]
 /--
 定义 3.4.1 集合的象
 
-如果`f : X → Y`是从`X`到`Y`的函数，并且`S`是`X`的一个子集，我们把`f(S)`定义为集合
-`f(S) := {f(x) : x ∈ S}`
-该集合是`Y`的一个子集，并且被称为`S`在映射`f`下的象
+如果$`f : X → Y`是从$`X`到$`Y`的函数，并且$`S`是$`X`的一个子集，我们把$`f(S)`定义为集合
+$`f(S) := {f(x) : x ∈ S}`
+该集合是$`Y`的一个子集，并且被称为$`S`在映射$`f`下的象
 -/
 abbrev SetTheory.Set.image {X Y : Set} (f : X → Y) (S : Set) : Set :=
   X.replace (P := fun x y ↦ f x = y ∧ x.val ∈ S) (by simp)
@@ -45,9 +45,7 @@ theorem SetTheory.Set.image_f_3_4_2 : image f_3_4_2 {1, 2, 3} = {2, 4, 6} := by
   rintro (_ | _ | _); map_tacs [use 1; use 2; use 3]
   all_goals simp_all
 
-/--
-例 3.4.3
--/
+/-- 例 3.4.3 -/
 example : (fun n : ℤ ↦ n ^ 2) '' {-1, 0, 1, 2} = {0, 1, 4} := by aesop
 
 theorem SetTheory.Set.mem_image_of_eval {X Y : Set} (f : X → Y) (S : Set) (x : X) :
@@ -69,9 +67,9 @@ theorem SetTheory.Set.mem_image_of_eval_counter :
 /--
 定义 3.4.4 逆象
 
-如果`U`是`Y`的一个子集，我们定义集合`f⁻¹(U)`为`f⁻¹(U) := {x ∈ X : f(x) ∈ U}`
-换言之，`f⁻¹(U)`是由`X`中所有被映射到`U`中的元素构成的：`f(x) ∈ U ↔ x ∈ f⁻¹(U)`
-我们称`f⁻¹(U)`为`U`的逆象。
+如果$`U`是$`Y`的一个子集，我们定义集合$`f⁻¹(U)`为$`f⁻¹(U) := {x ∈ X : f(x) ∈ U}`
+换言之，$`f⁻¹(U)`是由$`X`中所有被映射到$`U`中的元素构成的：$`f(x) ∈ U ↔ x ∈ f⁻¹(U)`
+我们称$`f⁻¹(U)`为$`U`的逆象。
 -/
 abbrev SetTheory.Set.preimage {X Y : Set} (f : X → Y) (U : Set) : Set := X.specify (P := fun x ↦ (f x).val ∈ U)
 
@@ -112,9 +110,7 @@ theorem SetTheory.Set.image_preimage_f_3_4_2 :
   obtain ⟨_, ⟨_, h2⟩⟩ := this
   simp at h2
 
-/--
-例 3.4.6
--/
+/-- 例 3.4.6 -/
 example : (fun n : ℤ ↦ n ^ 2)⁻¹' {0, 1, 4} = {-2, -1, 0, 1, 2} := by
   ext; refine ⟨?_, by aesop⟩; rintro (_ | _ | h)
   on_goal 3 => have : 2 ^ 2 = (4 : ℤ) := (by norm_num); rw [← h, sq_eq_sq_iff_eq_or_eq_neg] at this
@@ -146,8 +142,8 @@ theorem SetTheory.Set.coe_of_fun_inj {X Y : Set} (f g : X → Y) : (f : Object) 
 /--
 公理 3.10 幂集公理
 
-设`X`和`Y`都是集合，那么存在一个集合记作`Y ^ X`，该集合是由从`X`到`Y`的全体函数构成的。于是
-`f ∈ Y ^ X ↔ f : X → Y`
+设$`X`和$`Y`都是集合，那么存在一个集合记作$`Y ^ X`，该集合是由从$`X`到$`Y`的全体函数构成的。于是
+$`f ∈ Y ^ X ↔ f : X → Y`
 -/
 @[simp]
 theorem SetTheory.Set.powerset_axiom {X Y : Set} (F : Object) :
@@ -181,7 +177,7 @@ theorem SetTheory.Set.example_3_4_9 (F : Object) :
 /--
 引理 3.4.9
 
-设`X`是一个集合，那么`{Y : Y ⊆ X}`是一个集合
+设$`X`是一个集合，那么$`{Y : Y ⊆ X}`是一个集合
 -/
 def SetTheory.Set.powerset (X : Set) : Set :=
   (({0, 1} ^ X) : Set).replace (P := fun x y ↦ ∃ f : X → ({0, 1} : Set), f = x.val ∧ y = preimage f {1}) (by simp)
@@ -245,8 +241,8 @@ theorem SetTheory.Set.powerset_of_triple (a b c x : Object) :
 /--
 公理 3.11 并集
 
-设`A`是一个集合，并且`A`中的每一个元素本身也是一个集合。那么存在一个集合`∪A`，它的元素恰好是`A`的元素的元素。于是对任意的对象`x`,
-`x ∈ ⋃A ↔ ∃ S ∈ A, x ∈ S`
+设$`A`是一个集合，并且$`A`中的每一个元素本身也是一个集合。那么存在一个集合$`∪A`，它的元素恰好是$`A`的元素的元素。于是对任意的对象$`x`,
+$`x ∈ ⋃A ↔ ∃ S ∈ A, x ∈ S`
 -/
 theorem SetTheory.Set.union_axiom (A : Set) (x : Object) :
     x ∈ union A ↔ ∃ (S : Set), x ∈ S ∧ (S : Object) ∈ A := SetTheory.union_axiom A x

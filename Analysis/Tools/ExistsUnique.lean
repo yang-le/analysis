@@ -26,7 +26,7 @@ noncomputable def Subsingleton.choose {α : Sort*} [Subsingleton α] [hn : Nonem
 
 theorem Subsingleton.choose_spec {α : Sort*} [hs : Subsingleton α] [Nonempty α] (x : α) : x = hs.choose := Subsingleton.elim _ _
 
-/-- `ExistsUnique`和`Subsingleton`/`Nonempty`的等价性不要求选择公理 -/
+/-- {lean}`ExistsUnique`和{lean}`Subsingleton`/{lean}`Nonempty`的等价性不要求选择公理 -/
 theorem ExistsUnique.iff_subsingleton_nonempty {α : Sort*} {p : α → Prop} :
   (∃! x, p x) ↔ (Subsingleton {x // p x} ∧ Nonempty {x // p x}) := by
   constructor

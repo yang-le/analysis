@@ -30,9 +30,9 @@ class SetTheory where
   union_pair : Set → Set → Set
   /-- 公理 3.4 两集合之并集 -/
   union_pair_axiom X Y x : mem x (union_pair X Y) ↔ (mem x X ∨ mem x Y)
-  /-- 公理 3.5 分离公理 (`A`中使得`P`为真的元素恰好构成`A`的一个子集) -/
+  /-- 公理 3.5 分离公理 ($`A`中使得$`P`为真的元素恰好构成$`A`的一个子集) -/
   specify A (P : Subtype (mem . A) → Prop) : Set
-  /-- 公理 3.5 分离公理 (`A`中使得`P`为真的元素恰好构成`A`的一个子集) -/
+  /-- 公理 3.5 分离公理 ($`A`中使得$`P`为真的元素恰好构成$`A`的一个子集) -/
   specification_axiom A (P : Subtype (mem . A) → Prop) :
     (∀ x, mem x (specify A P) → mem x A) ∧ ∀ x, mem x.val (specify A P) ↔ P x
   /-- 公理 3.6 替代公理 -/
@@ -67,8 +67,8 @@ variable [SetTheory]
 /--
 定义 3.1.1
 
-我们把集合`A`定义为任意一堆没有次序的对像.
-如果`x`是这堆对象中的一个, 那么我们称`x`是`A`中的元素, 记作`x ∈ A`; 否则, 记作`x ∉ A`.
+我们把集合$`A`定义为任意一堆没有次序的对像.
+如果$`x`是这堆对象中的一个, 那么我们称$`x`是$`A`中的元素, 记作$`x ∈ A`; 否则, 记作$`x ∉ A`.
 -/
 instance SetTheory.objects_mem_sets : Membership Object Set where
   mem X x := mem x X
@@ -78,7 +78,7 @@ example (X : Set) (x : Object) : x ∈ X ↔ SetTheory.mem x X := by rfl
 /--
 公理 3.1 集合是对象
 
-如果`A`是一个集合, 那么`A`也是一个对象.
+如果$`A`是一个集合, 那么$`A`也是一个对象.
 -/
 instance SetTheory.sets_are_objects : Coe Set Object where
   coe X := set_to_object X
@@ -88,7 +88,7 @@ example (X : Set) : (X : Object) = SetTheory.set_to_object X := rfl
 /--
 公理 3.1 集合是对象
 
-如果`A`是一个集合, 那么`A`也是一个对象.
+如果$`A`是一个集合, 那么$`A`也是一个对象.
 -/
 theorem SetTheory.Set.coe_eq {X Y : Set} (h : (X : Object) = (Y : Object)) : X = Y :=
   set_to_object.inj' h
@@ -100,7 +100,7 @@ theorem SetTheory.Set.coe_iff (X Y : Set) : (X : Object) = (Y : Object) ↔ X = 
 /--
 定义 3.1.4 集合的相等
 
-称两个集合`A`和`B`是相等的, 即`A = B`, 当且仅当`A`中的每个元素都是`B`中的元素并且`B`中的每个元素也都是`A`中的元素.
+称两个集合$`A`和$`B`是相等的, 即$`A = B`, 当且仅当$`A`中的每个元素都是$`B`中的元素并且$`B`中的每个元素也都是$`A`中的元素.
 -/
 @[ext]
 theorem SetTheory.Set.ext {X Y : Set} (h : ∀ x, x ∈ X ↔ x ∈ Y) : X = Y := extensionality _ _ h
@@ -117,7 +117,7 @@ open SetTheory.Set
 /--
 公理 3.2 空集
 
-存在一个集合`∅`, 被称为空集, 它不包含任何元素. 也就是说, 对于任意的对象`x`均有`x ∉ ∅`.
+存在一个集合$`∅`, 被称为空集, 它不包含任何元素. 也就是说, 对于任意的对象$`x`均有$`x ∉ ∅`.
 -/
 @[simp]
 theorem SetTheory.Set.not_mem_empty : ∀ x, x ∉ (∅ : Set) := emptyset_mem
@@ -143,7 +143,7 @@ theorem SetTheory.Set.empty_unique : ∃! (X : Set), ∀ x, x ∉ X := by
 /--
 引理 3.1.6 单个选取
 
-设`A`是一个非空集合, 那么存在一个对象`x`使得`x ∈ A`
+设$`A`是一个非空集合, 那么存在一个对象$`x`使得$`x ∈ A`
 -/
 lemma SetTheory.Set.nonempty_def {X : Set} (h : X ≠ ∅) : ∃ x, x ∈ X := by
   by_contra! this
@@ -164,8 +164,8 @@ example (x : Object) : {x} = SetTheory.singleton x := rfl
 /--
 公理 3.3 单元素集
 
-如果`a`是一个对象, 那么存在一个集合`{a}`并且该集合中的唯一的一个元素就是`a`.
-也就是说, 对于任意一个对象`y`, 我们有`y ∈ {a}`当且仅当`y = a`; 我们称`{a}`是元素为`a`的单元素集.
+如果$`a`是一个对象, 那么存在一个集合$`{a}`并且该集合中的唯一的一个元素就是$`a`.
+也就是说, 对于任意一个对象$`y`, 我们有$`y ∈ {a}`当且仅当$`y = a`; 我们称$`{a}`是元素为$`a`的单元素集.
 -/
 @[simp]
 theorem SetTheory.Set.mem_singleton (x a : Object) : x ∈ ({a} : Set) ↔ x = a := singleton_axiom x a
@@ -178,8 +178,8 @@ example (X Y : Set) : X ∪ Y = SetTheory.union_pair X Y := rfl
 /--
 公理 3.4 两集合之并
 
-给定任意两个集合`A`和`B`, 存在一个集合`A ∪ B`被称为`A`和`B`的并集, 该集合的元素由属于`A`的或者属于`B`的或者同时属于`A`和`B`的所有元素共同构成.
-换言之, 对任意的对象`x`, `x ∈ A ∪ B ↔ (x ∈ A ∨ x ∈ B)`
+给定任意两个集合$`A`和$`B`, 存在一个集合$`A ∪ B`被称为$`A`和$`B`的并集, 该集合的元素由属于$`A`的或者属于$`B`的或者同时属于$`A`和$`B`的所有元素共同构成.
+换言之, 对任意的对象$`x`, $`x ∈ A ∪ B ↔ (x ∈ A ∨ x ∈ B)`
 -/
 @[simp]
 theorem SetTheory.Set.mem_union (x : Object) (X Y : Set) : x ∈ (X ∪ Y) ↔ (x ∈ X ∨ x ∈ Y) :=
@@ -195,8 +195,8 @@ theorem SetTheory.Set.mem_insert (a b : Object) (X : Set) : a ∈ insert b X ↔
 /--
 公理 3.3 双元素集
 
-如果`a`和`b`都是对象, 那么存在一个集合`{a, b}`, 并且该集合的元素只有`a`和`b`.
-换言之, 对任意一个对象`y`, 有`y ∈ {a, b}`当且仅当`y = a`或`y = b`; 我们称该集合是由`a`和`b`构成的双元素集.
+如果$`a`和$`b`都是对象, 那么存在一个集合$`{a, b}`, 并且该集合的元素只有$`a`和$`b`.
+换言之, 对任意一个对象$`y`, 有$`y ∈ {a, b}`当且仅当$`y = a`或$`y = b`; 我们称该集合是由$`a`和$`b`构成的双元素集.
 -/
 theorem SetTheory.Set.pair_eq (a b : Object) : ({a, b} : Set) = {a} ∪ {b} := by rfl
 
@@ -280,7 +280,7 @@ abbrev SetTheory.Set.pair_empty : Set := {(empty : Object), (singleton_empty : O
 /--
 习题 3.1.2
 
-只利用定义 3.1.4, 公理 3.1 - 3.3 证明集合`∅, {∅}, {∅, {∅}}`是互不相等的集合(即任意两个集合彼此互不相等).
+只利用定义 3.1.4, 公理 3.1 - 3.3 证明集合$`∅, {∅}, {∅, {∅}}`是互不相等的集合(即任意两个集合彼此互不相等).
 -/
 theorem SetTheory.Set.emptyset_neq_singleton : empty ≠ singleton_empty := by
   by_contra h
@@ -310,9 +310,9 @@ theorem SetTheory.Set.union_congr_right (A B B' : Set) (h : B = B') : A ∪ B = 
 /--
 引理 3.1.13
 
-如果`a`和`b`都是对象, 那么`{a, b} = {a} ∪ {b}`.
-如果`A, B, C`都是集合, 那么求并运算是可交换的(即`A ∪ B = B ∪ A`), 而且也是可结合的(即`(A ∪ B) ∪ C = A ∪ (B ∪ C)`).
-另外, 我们有`A ∪ A = A ∪ ∅ = ∅ ∪ A = A`.
+如果$`a`和$`b`都是对象, 那么$`{a, b} = {a} ∪ {b}`.
+如果$`A, B, C`都是集合, 那么求并运算是可交换的(即$`A ∪ B = B ∪ A`), 而且也是可结合的(即$`(A ∪ B) ∪ C = A ∪ (B ∪ C)`).
+另外, 我们有$`A ∪ A = A ∪ ∅ = ∅ ∪ A = A`.
 -/
 theorem SetTheory.Set.singleton_union_singleton (a b : Object) :
     ({a} : Set) ∪ ({b} : Set) = {a, b} := by
@@ -366,9 +366,9 @@ theorem SetTheory.Set.pair_union_pair (a b c : Object) : ({a, b} : Set) ∪ {b, 
 /--
 定义 3.1.15 子集
 
-设`A`和`B`都是集合, 我们称`A`是`B`的子集, 并记作`A ⊆ B`, 当且仅当`A`的每一个元素都是`B`中的元素,即
-`∀ x, x ∈ A → x ∈ B`
-如果`A ⊆ B`并且`A ≠ B`, 那么我们称`A`是`B`的真子集, 记作`A ⊂ B`.
+设$`A`和$`B`都是集合, 我们称$`A`是$`B`的子集, 并记作$`A ⊆ B`, 当且仅当$`A`的每一个元素都是$`B`中的元素,即
+$`∀ x, x ∈ A → x ∈ B`
+如果$`A ⊆ B`并且$`A ≠ B`, 那么我们称$`A`是$`B`的真子集, 记作$`A ⊂ B`.
 -/
 instance SetTheory.Set.instSubset : HasSubset Set where
   Subset X Y := ∀ x, x ∈ X → x ∈ Y
@@ -397,9 +397,9 @@ theorem SetTheory.Set.empty_subset (A : Set) : ∅ ⊆ A := by rw [subset_def]; 
 /--
 命题 3.1.18 集合的包含关系使集合是偏序的
 
-设`A, B, C`是集合. 如果`A ⊆ B`并且`B ⊆ C`, 那么`A ⊆ C`.
-如果`A ⊆ B`并且`B ⊆ A`, 那么`A = B`.
-最后, 如果`A ⊂ B`并且`B ⊂ C`, 那么`A ⊂ C`.
+设$`A, B, C`是集合. 如果$`A ⊆ B`并且$`B ⊆ C`, 那么$`A ⊆ C`.
+如果$`A ⊆ B`并且$`B ⊆ A`, 那么$`A = B`.
+最后, 如果$`A ⊂ B`并且$`B ⊂ C`, 那么$`A ⊂ C`.
 -/
 theorem SetTheory.Set.subset_trans {A B C : Set} (hAB : A ⊆ B) (hBC : B ⊆ C) : A ⊆ C := by
   rw [subset_def]
@@ -460,9 +460,9 @@ abbrev SetTheory.Set.specify (A : Set) (P : A → Prop) : Set := SetTheory.speci
 /--
 公理 3.5 分离公理
 
-设`A`是一个集合, 对任意的`x ∈ A`, 令`P(x)`表示关于`x`的一个性质(即`P(x)`要么是真命题, 要么是假命题).
-那么存在一个集合, 记作`{x ∈ A : P(x)}`, 该集合恰好是由`A`中那些使得`P(x)`为真的元素`x`构成的. 换言之, 对任意的对象`y`,
-`y ∈ {x ∈ A : P(x)} ↔ (y ∈ A ∧ P(y))`
+设$`A`是一个集合, 对任意的$`x ∈ A`, 令$`P(x)`表示关于$`x`的一个性质(即$`P(x)`要么是真命题, 要么是假命题).
+那么存在一个集合, 记作$`{x ∈ A : P(x)}`, 该集合恰好是由$`A`中那些使得$`P(x)`为真的元素$`x`构成的. 换言之, 对任意的对象$`y`,
+$`y ∈ {x ∈ A : P(x)} ↔ (y ∈ A ∧ P(y))`
 -/
 theorem SetTheory.Set.specification_axiom {A : Set} {P : A → Prop} {x : Object} (h : x ∈ A.specify P) :
     x ∈ A :=
@@ -508,10 +508,10 @@ example (X Y : Set) : X ∩ Y = X.specify (fun x ↦ x.val ∈ Y) := rfl
 /--
 定义 3.1.23 交集
 
-两个集合的交集`S₁ ∩ S₂`被定义为下面这样一个集合
-`S₁ ∩ S₂ := {x ∈ S₁ : x ∈ S₂}`
-即`S₁ ∩ S₂`是由所有同时属于`S₁`和`S₂`的元素构成的。于是对任意的对象`x`，
-`x ∈ S₁ ∩ S₂ ↔ x ∈ S₁ ∧ x ∈ S₂`
+两个集合的交集$`S₁ ∩ S₂`被定义为下面这样一个集合
+$`S₁ ∩ S₂ := {x ∈ S₁ : x ∈ S₂}`
+即$`S₁ ∩ S₂`是由所有同时属于$`S₁`和$`S₂`的元素构成的。于是对任意的对象$`x`，
+$`x ∈ S₁ ∩ S₂ ↔ x ∈ S₁ ∧ x ∈ S₂`
 -/
 @[simp]
 theorem SetTheory.Set.mem_inter (x : Object) (X Y : Set) : x ∈ (X ∩ Y) ↔ (x ∈ X ∧ x ∈ Y) := by
@@ -528,9 +528,9 @@ example (X Y : Set) : X \ Y = X.specify (fun x ↦ x.val ∉ Y) := rfl
 /--
 定义 3.1.27 差集
 
-给定两个集合`A`和`B`，我们定义集合`A - B`或`A \ B`是由`A`中所有不属于`B`的元素组成的集合。
-`A \ B := {x ∈ A : x ∉ B}`
-在很多情况下，`B`是`A`的一个子集，但并非必须如此。
+给定两个集合$`A`和$`B`，我们定义集合$`A - B`或$`A \ B`是由$`A`中所有不属于$`B`的元素组成的集合。
+$`A \ B := {x ∈ A : x ∉ B}`
+在很多情况下，$`B`是$`A`的一个子集，但并非必须如此。
 -/
 @[simp]
 theorem SetTheory.Set.mem_sdiff (x : Object) (X Y : Set) : x ∈ (X \ Y) ↔ (x ∈ X ∧ x ∉ Y) := by
@@ -683,10 +683,10 @@ abbrev SetTheory.Set.replace (A : Set) {P : A → Object → Prop}
 /--
 公理 3.6 替代公理
 
-设`A`是一个集合，对任意的`x ∈ A`和任意的一个对象`y`，
-假设存在一个关于`x`和`y`的命题`P(x, y)`使得对任意的`x ∈ A`，最多能够找到一个`y`使得`P(x, y)`为真。
-那么存在一个集合`{y : ∃ x ∈ A, P(x, y)}`使得对任意的对象`z`
-`z ∈ {y : ∃ x ∈ A, P(x, y)} ↔ ∃ x ∈ A, P(x, z)`
+设$`A`是一个集合，对任意的$`x ∈ A`和任意的一个对象$`y`，
+假设存在一个关于$`x`和$`y`的命题$`P(x, y)`使得对任意的$`x ∈ A`，最多能够找到一个$`y`使得$`P(x, y)`为真。
+那么存在一个集合$`{y : ∃ x ∈ A, P(x, y)}`使得对任意的对象$`z`
+$`z ∈ {y : ∃ x ∈ A, P(x, y)} ↔ ∃ x ∈ A, P(x, z)`
 -/
 @[simp]
 theorem SetTheory.Set.replacement_axiom {A : Set} {P : A → Object → Prop}
@@ -703,8 +703,8 @@ example (o : Object) (ho : o ∈ Nat) : Nat := ⟨o, ho⟩
 /--
 公理 3.7 无穷公理
 
-存在一个集合`ℕ`，它的元素被称为自然数。
-对象`0`在`ℕ`中，且由每一个自然数`n ∈ ℕ`所指定的满足皮亚诺公理（公理2.1 ~ 2.5）的对象`n++`也在`ℕ`中。
+存在一个集合$`ℕ`，它的元素被称为自然数。
+对象$`0`在$`ℕ`中，且由每一个自然数$`n ∈ ℕ`所指定的满足皮亚诺公理（公理2.1 ~ 2.5）的对象$`n++`也在$`ℕ`中。
 -/
 def SetTheory.Set.nat_equiv : ℕ ≃ Nat := SetTheory.nat_equiv
 
@@ -949,7 +949,7 @@ theorem SetTheroy.Set.union_eq_partition (A B : Set) : A ∪ B = (A \ B) ∪ (A 
 /--
 习题 3.1.11
 
-要求不能使用分离公理及其推论，例如`Set.specify, Set.specification_axiom`以及差集、交集等
+要求不能使用分离公理及其推论，例如{lean}`Set.specify`，{lean}`Set.specification_axiom`以及差集、交集等
 -/
 theorem SetTheory.Set.specification_from_replacement {A : Set} {P : A → Prop} :
     ∃ B, B ⊆ A ∧ ∀ x, x.val ∈ B ↔ P x := by
