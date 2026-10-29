@@ -452,6 +452,123 @@ noncomputable abbrev SetTheory.Set.Fin.Fin_equiv_Fin (n : ℕ) : Fin n ≃ _root
 换言之，如果每一个$`Xᵢ`都是非空集合，那么集合$`Π_{1 ≤ i ≤ n} Xᵢ`也是非空的。
 -/
 theorem SetTheory.Set.finite_choice {n : ℕ} {X : Fin n → Set} (h : ∀ i, X i ≠ ∅) : iProd X ≠ ∅ := by
-  sorry
+  induction' n with n hn
+  · have : Fin 0 = ∅ := by
+      rw [eq_empty_iff_forall_notMem]
+      grind [specification_axiom'']
+    have empty (i : Fin 0) : X i := False.elim (by rw [this] at i; exact not_mem_empty i i.property)
+    apply nonempty_of_inhabited (x := tuple empty); rw [mem_iProd]; use empty
+  set X' : Fin n → Set := fun i ↦ X (Fin_embed n (n + 1) (by linarith) i)
+  have hX' (i : Fin n) : X' i ≠ ∅ := h _
+  choose x'_obj hx' using nonempty_def (hn hX')
+  rw [mem_iProd] at hx'; obtain ⟨x', rfl⟩ := hx'
+  set last : Fin (n + 1) := Fin_mk (n + 1) n (by linarith)
+  choose a ha using nonempty_def (h last)
+  have x : ∀ i, X i := fun i =>
+    if h : i = n then
+      have : i = last := by ext; simpa [← Fin.coe_toNat, last]
+      ⟨a, by grind⟩
+    else
+      have : i < n := lt_of_le_of_ne (Nat.lt_succ_iff.mp (Fin.toNat_lt i)) h
+      let i' := Fin_mk n i this
+      have : X i = X' i' := by simp [X', i', Fin_embed]
+      ⟨x' i', by grind⟩
+  exact nonempty_of_inhabited (tuple_mem_iProd x)
+
+/--
+习题 3.5.1
+-/
+abbrev OrderedPair.toObject' : OrderedPair ↪ Object where
+  toFun p := ({p.fst, (({p.fst, p.snd} : Set) : Object)} : Set)
+  inj' := by
+    intro x y h
+    rw [eq]
+    simp at h
+    obtain (⟨h1, h2⟩ | ⟨h1, h2⟩) := pair_eq_pair h <;> simp_all
+    · obtain (⟨h21, h22⟩ | ⟨h21, h22⟩) := pair_eq_pair h2
+      · assumption
+      · rw [← h21, h22]
+    · obtain (_ | _) := not_mem_mem ({x.fst, x.snd} : Set) ({y.fst, y.snd} : Set)
+      · rw [← h1] at h2
+        have : SetTheory.set_to_object {x.fst, x.snd} ≠ y.fst := by aesop
+        contradiction
+      · have : x.fst ≠ SetTheory.set_to_object {y.fst, y.snd} := by aesop
+        contradiction
+
+structure SetTheory.Set.Tuple (n : ℕ) where
+  X : Set
+  x : Fin n → X
+  surj : Function.Surjective x
+
+@[ext]
+lemma SetTheory.Set.Tuple.ext {n : ℕ} {t t' : Tuple n}
+    (hX : t.X = t'.X)
+    (hx : ∀ n : Fin n, ((t.x n) : Object) = ((t'.x n) : Object)) :
+    t = t' := by
+  have ⟨_, _, _⟩ := t; have ⟨_, _, _⟩ := t'; subst hX; congr; ext; grind
+
+/--
+习题 3.5.2
+-/
+theorem SetTheory.Set.Tuple.eq {n : ℕ} (t t' : Tuple n) :
+    t = t' ↔ ∀ n : Fin n, ((t.x n) : Object) = ((t'.x n) : Object) := by
+  refine ⟨by aesop, ?_⟩
+  intro h
+  ext x
+  · constructor
+    · intro h'
+      obtain ⟨y, hy⟩ := t.surj ⟨x, h'⟩
+      have := h y
+      have hx : x = t'.x y := by aesop
+      have := (t'.x y).property
+      rwa [← hx] at this
+    · intro h'
+      obtain ⟨y, hy⟩ := t'.surj ⟨x, h'⟩
+      have := h y
+      have hx : x = t.x y := by aesop
+      have := (t.x y).property
+      rwa [← hx] at this
+  · exact h x
+
+noncomputable abbrev SetTheory.Set.iProd_equiv_tuples (n : ℕ) (X : Fin n → Set) :
+    iProd X ≃ {t : Tuple n // ∀ i, (t.x i : Object) ∈ X i} where
+  toFun p := by
+    have x := ((mem_iProd _).mp p.property).choose
+    let f' (i : Fin n) : iUnion _ X :=
+      ⟨x i, by rw [mem_iUnion]; exact ⟨i, (x i).property⟩⟩
+    let U := image f' (Fin n)
+    let f (i : Fin n) : U :=
+      ⟨f' i, by rw [mem_image]; exact ⟨i, i.property, rfl⟩⟩
+    let t : Tuple n := ⟨U, f, by
+      intro b
+      obtain ⟨x, _, _⟩ := (mem_image _ _ _).mp b.property
+      use x; aesop
+    ⟩
+    exact ⟨t, by
+      intro i
+      simp only [t, f]
+      exact (x i).property
+    ⟩
+  invFun t := by
+    let f (i : Fin n) : X i := ⟨t.val.x i, t.property i⟩
+    exact ⟨tuple f, tuple_mem_iProd f⟩
+  left_inv p := by
+    ext; simp
+    generalize_proofs h
+    exact h.choose_spec.symm
+  right_inv t := by
+    ext x <;> dsimp <;>
+    generalize_proofs _ h1 <;>
+    have h1 := h1.choose_spec <;>
+    rw [tuple_inj] at h1
+    · constructor <;> intro h
+      · rw [mem_image] at h
+        obtain ⟨i, _, h2⟩ := h
+        simp [← h2, ← h1]
+        exact (t.val.x i).property
+      · rw [mem_image]
+        obtain ⟨a, ha⟩ := t.val.surj ⟨x, h⟩
+        exact ⟨a, a.property, by simp [← h1, ha]⟩
+    · rw [← h1]
 
 end Chapter3

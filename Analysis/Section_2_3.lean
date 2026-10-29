@@ -251,7 +251,7 @@ theorem Nat.exists_div_mod (n : Nat) {q : Nat} (hq : q.IsPos) :
 定义 2.3.11 自然数的指数运算
 
 设$`m`是一个自然数。我们定义$`m⁰ := 1`来表示把$`m`升到$`0`次幂；特别地，定义$`0⁰ = 1`。
-现在递归地假设对于某个自然数$`n`,$`mⁿ`已经被定义了，那么我们定义$`m^(n++) := mⁿ × m`
+现在递归地假设对于某个自然数$`n`,$`mⁿ`已经被定义了，那么我们定义$`m^{(n++)} := mⁿ × m`
 -/
 abbrev Nat.pow (m n : Nat) : Nat := Nat.recurse (fun _ prod ↦ prod * m) 1 n
 

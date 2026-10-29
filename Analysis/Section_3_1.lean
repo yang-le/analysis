@@ -151,7 +151,7 @@ lemma SetTheory.Set.nonempty_def {X : Set} (h : X ≠ ∅) : ∃ x, x ∈ X := b
   apply ext at claim
   contradiction
 
-theorem SetTheory.Set.nonemtpy_of_inhabited {X : Set} {x : Object} (h : x ∈ X) : X ≠ ∅ := by
+theorem SetTheory.Set.nonempty_of_inhabited {X : Set} {x : Object} (h : x ∈ X) : X ≠ ∅ := by
   contrapose! h
   rw [eq_empty_iff_forall_notMem] at h
   exact h x
