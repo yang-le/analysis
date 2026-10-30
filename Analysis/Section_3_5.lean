@@ -538,7 +538,7 @@ noncomputable abbrev SetTheory.Set.iProd_equiv_tuples (n : ℕ) (X : Fin n → S
       ⟨x i, by rw [mem_iUnion]; exact ⟨i, (x i).property⟩⟩
     let U := image f' (Fin n)
     let f (i : Fin n) : U :=
-      ⟨f' i, by rw [mem_image]; exact ⟨i, i.property, rfl⟩⟩
+      ⟨x i, by rw [mem_image]; exact ⟨i, i.property, rfl⟩⟩
     let t : Tuple n := ⟨U, f, by
       intro b
       obtain ⟨x, _, _⟩ := (mem_image _ _ _).mp b.property
@@ -570,5 +570,144 @@ noncomputable abbrev SetTheory.Set.iProd_equiv_tuples (n : ℕ) (X : Fin n → S
         obtain ⟨a, ha⟩ := t.val.surj ⟨x, h⟩
         exact ⟨a, a.property, by simp [← h1, ha]⟩
     · rw [← h1]
+
+/--
+习题 3.5.3
+
+使用{lean}`OrderedPair.eq`或{lean}`SetTheory.Set.tuple_inj`
+-/
+theorem OrderedPair.refl (p : OrderedPair) : p = p := by
+  rw [eq]
+  constructor <;> rfl
+
+theorem OrderedPair.symm (p q : OrderedPair) : p = q ↔ q = p := by
+  constructor
+  all_goals
+  · intro h
+    rw [eq] at *
+    exact ⟨h.1.symm, h.2.symm⟩
+
+theorem OrderedPair.trans {p q r : OrderedPair} (hpq : p = q) (hqr : q = r) : p = r := by
+  rw [eq] at *
+  constructor
+  · rw [hpq.1, hqr.1]
+  · rw [hpq.2, hqr.2]
+
+theorem SetTheory.Set.tuple_refl {I : Set} {X : I → Set} (a : ∀ i, X i) :
+    tuple a = tuple a := by
+  rw [tuple_inj]
+
+theorem SetTheory.Set.tuple_symm {I : Set} {X : I → Set} (a b : ∀ i, X i) :
+    tuple a = tuple b ↔ tuple b = tuple a := by
+  constructor
+  all_goals
+  · intro h
+    rw [tuple_inj] at *
+    exact h.symm
+
+theorem SetTheory.Set.tuple_trans {I : Set} {X : I → Set} {a b c : ∀ i, X i}
+  (hab : tuple a = tuple b) (hbc : tuple b = tuple c) :
+    tuple a = tuple c := by
+  rw [tuple_inj] at *
+  rw [hab, hbc]
+
+/--
+习题 3.5.4
+-/
+theorem SetTheory.Set.prod_union (A B C : Set) : A ×ˢ (B ∪ C) = (A ×ˢ B) ∪ (A ×ˢ C) := by
+  ext x
+  constructor <;> intro h <;> simp at *
+  · obtain ⟨a, ha, b, (hb | hb), hx⟩ := h
+    · left; exact ⟨a, ha, b, hb, hx⟩
+    · right; exact ⟨a, ha, b, hb, hx⟩
+  · obtain (⟨a, ha, b, hb, hx⟩ | ⟨a, ha, b, hb, hx⟩) := h
+    · exact ⟨a, ha, b, Or.inl hb, hx⟩
+    · exact ⟨a, ha, b, Or.inr hb, hx⟩
+
+theorem SetTheory.Set.prod_inter (A B C : Set) : A ×ˢ (B ∩ C) = (A ×ˢ B) ∩ (A ×ˢ C) := by
+  ext x
+  constructor <;> intro h <;> simp at *
+  · obtain ⟨a, ha, b, ⟨hb1, hb2⟩, hx⟩ := h
+    constructor
+    · exact ⟨a, ha, b, hb1, hx⟩
+    · exact ⟨a, ha, b, hb2, hx⟩
+  · obtain ⟨⟨a, ha, b, hb, hx⟩, ⟨_, _, _, _, hx'⟩⟩ := h
+    use a, ha, b
+    split_ands
+    · assumption
+    · rw [hx'] at hx
+      simp at hx
+      rwa [← hx.2]
+    · rw [hx'] at hx
+      simp at hx
+      rwa [← hx.1, ← hx.2]
+
+theorem SetTheory.Set.prod_diff (A B C : Set) : A ×ˢ (B \ C) = (A ×ˢ B) \ (A ×ˢ C) := by
+  ext x
+  constructor <;> intro h <;> simp at *
+  · obtain ⟨a, ha, b, ⟨hb1, hb2⟩, hx⟩ := h
+    constructor
+    · exact ⟨a, ha, b, hb1, hx⟩
+    · by_contra! h
+      obtain ⟨_, _, _, hb', hx'⟩ := h
+      rw [hx'] at hx
+      simp at hx
+      rw [hx.2] at hb'
+      contradiction
+  · obtain ⟨⟨a, ha, b, _, _⟩, h⟩ := h
+    use a, ha, b
+    split_ands
+    · assumption
+    · by_contra! hb
+      have := h a ha b hb
+      contradiction
+    · assumption
+
+theorem SetTheory.Set.union_prod (A B C : Set) : (A ∪ B) ×ˢ C = (A ×ˢ C) ∪ (B ×ˢ C) := by
+  ext x
+  constructor <;> intro h <;> simp at *
+  · obtain ⟨a, (ha | ha), b, hb, hx⟩ := h
+    · left; exact ⟨a, ha, b, hb, hx⟩
+    · right; exact ⟨a, ha, b, hb, hx⟩
+  · obtain (⟨a, ha, b, hb, hx⟩ | ⟨a, ha, b, hb, hx⟩) := h
+    · exact ⟨a, Or.inl ha, b, hb, hx⟩
+    · exact ⟨a, Or.inr ha, b, hb, hx⟩
+
+theorem SetTheory.Set.inter_prod (A B C : Set) : (A ∩ B) ×ˢ C = (A ×ˢ C) ∩ (B ×ˢ C) := by
+  ext x
+  constructor <;> intro h <;> simp at *
+  · obtain ⟨a, ⟨ha1, ha2⟩, b, hb, hx⟩ := h
+    constructor
+    · exact ⟨a, ha1, b, hb, hx⟩
+    · exact ⟨a, ha2, b, hb, hx⟩
+  · obtain ⟨⟨a, ha, b, hb, hx⟩, ⟨_, _, _, _, hx'⟩⟩ := h
+    use a
+    split_ands
+    · assumption
+    · rw [hx'] at hx
+      simp at hx
+      rwa [← hx.1]
+    · use b
+
+theorem SetTheory.Set.diff_prod (A B C : Set) : (A \ B) ×ˢ C= (A ×ˢ C) \ (B ×ˢ C) := by
+  ext x
+  constructor <;> intro h <;> simp at *
+  · obtain ⟨a, ⟨ha1, ha2⟩, b, hb, hx⟩ := h
+    constructor
+    · exact ⟨a, ha1, b, hb, hx⟩
+    · by_contra! h
+      obtain ⟨_, ha', _, _, hx'⟩ := h
+      rw [hx'] at hx
+      simp at hx
+      rw [hx.1] at ha'
+      contradiction
+  · obtain ⟨⟨a, _, b, hb, _⟩, h⟩ := h
+    use a
+    split_ands
+    · assumption
+    · by_contra! ha
+      have := h a ha b hb
+      contradiction
+    · use b
 
 end Chapter3
