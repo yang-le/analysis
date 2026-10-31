@@ -164,8 +164,8 @@ example (x : Object) : {x} = SetTheory.singleton x := rfl
 /--
 公理 3.3 单元素集
 
-如果$`a`是一个对象, 那么存在一个集合$`{a}`并且该集合中的唯一的一个元素就是$`a`.
-也就是说, 对于任意一个对象$`y`, 我们有$`y ∈ {a}`当且仅当$`y = a`; 我们称$`{a}`是元素为$`a`的单元素集.
+如果$`a`是一个对象, 那么存在一个集合$`\{a\}`并且该集合中的唯一的一个元素就是$`a`.
+也就是说, 对于任意一个对象$`y`, 我们有$`y ∈ \{a\}`当且仅当$`y = a`; 我们称$`\{a\}`是元素为$`a`的单元素集.
 -/
 @[simp]
 theorem SetTheory.Set.mem_singleton (x a : Object) : x ∈ ({a} : Set) ↔ x = a := singleton_axiom x a
@@ -195,8 +195,8 @@ theorem SetTheory.Set.mem_insert (a b : Object) (X : Set) : a ∈ insert b X ↔
 /--
 公理 3.3 双元素集
 
-如果$`a`和$`b`都是对象, 那么存在一个集合$`{a, b}`, 并且该集合的元素只有$`a`和$`b`.
-换言之, 对任意一个对象$`y`, 有$`y ∈ {a, b}`当且仅当$`y = a`或$`y = b`; 我们称该集合是由$`a`和$`b`构成的双元素集.
+如果$`a`和$`b`都是对象, 那么存在一个集合$`\{a, b\}`, 并且该集合的元素只有$`a`和$`b`.
+换言之, 对任意一个对象$`y`, 有$`y ∈ \{a, b\}`当且仅当$`y = a`或$`y = b`; 我们称该集合是由$`a`和$`b`构成的双元素集.
 -/
 theorem SetTheory.Set.pair_eq (a b : Object) : ({a, b} : Set) = {a} ∪ {b} := by rfl
 
@@ -280,7 +280,7 @@ abbrev SetTheory.Set.pair_empty : Set := {(empty : Object), (singleton_empty : O
 /--
 习题 3.1.2
 
-只利用定义 3.1.4, 公理 3.1 - 3.3 证明集合$`∅, {∅}, {∅, {∅}}`是互不相等的集合(即任意两个集合彼此互不相等).
+只利用定义 3.1.4, 公理 3.1 - 3.3 证明集合$`∅, \{∅\}, \{∅, \{∅\}\}`是互不相等的集合(即任意两个集合彼此互不相等).
 -/
 theorem SetTheory.Set.emptyset_neq_singleton : empty ≠ singleton_empty := by
   by_contra h
@@ -310,7 +310,7 @@ theorem SetTheory.Set.union_congr_right (A B B' : Set) (h : B = B') : A ∪ B = 
 /--
 引理 3.1.13
 
-如果$`a`和$`b`都是对象, 那么$`{a, b} = {a} ∪ {b}`.
+如果$`a`和$`b`都是对象, 那么$`\{a, b\} = \{a\} ∪ \{b\}`.
 如果$`A, B, C`都是集合, 那么求并运算是可交换的(即$`A ∪ B = B ∪ A`), 而且也是可结合的(即$`(A ∪ B) ∪ C = A ∪ (B ∪ C)`).
 另外, 我们有$`A ∪ A = A ∪ ∅ = ∅ ∪ A = A`.
 -/
@@ -461,8 +461,8 @@ abbrev SetTheory.Set.specify (A : Set) (P : A → Prop) : Set := SetTheory.speci
 公理 3.5 分离公理
 
 设$`A`是一个集合, 对任意的$`x ∈ A`, 令$`P(x)`表示关于$`x`的一个性质(即$`P(x)`要么是真命题, 要么是假命题).
-那么存在一个集合, 记作$`{x ∈ A : P(x)}`, 该集合恰好是由$`A`中那些使得$`P(x)`为真的元素$`x`构成的. 换言之, 对任意的对象$`y`,
-$`y ∈ {x ∈ A : P(x)} ↔ (y ∈ A ∧ P(y))`
+那么存在一个集合, 记作$`\{x ∈ A : P(x)\}`, 该集合恰好是由$`A`中那些使得$`P(x)`为真的元素$`x`构成的. 换言之, 对任意的对象$`y`,
+$`y ∈ \{x ∈ A : P(x)\} ↔ (y ∈ A ∧ P(y))`
 -/
 theorem SetTheory.Set.specification_axiom {A : Set} {P : A → Prop} {x : Object} (h : x ∈ A.specify P) :
     x ∈ A :=
@@ -509,7 +509,7 @@ example (X Y : Set) : X ∩ Y = X.specify (fun x ↦ x.val ∈ Y) := rfl
 定义 3.1.23 交集
 
 两个集合的交集$`S₁ ∩ S₂`被定义为下面这样一个集合
-$`S₁ ∩ S₂ := {x ∈ S₁ : x ∈ S₂}`
+$`S₁ ∩ S₂ := \{x ∈ S₁ : x ∈ S₂\}`
 即$`S₁ ∩ S₂`是由所有同时属于$`S₁`和$`S₂`的元素构成的。于是对任意的对象$`x`，
 $`x ∈ S₁ ∩ S₂ ↔ x ∈ S₁ ∧ x ∈ S₂`
 -/
@@ -529,7 +529,7 @@ example (X Y : Set) : X \ Y = X.specify (fun x ↦ x.val ∉ Y) := rfl
 定义 3.1.27 差集
 
 给定两个集合$`A`和$`B`，我们定义集合$`A - B`或$`A \ B`是由$`A`中所有不属于$`B`的元素组成的集合。
-$`A \ B := {x ∈ A : x ∉ B}`
+$`A \ B := \{x ∈ A : x ∉ B\}`
 在很多情况下，$`B`是$`A`的一个子集，但并非必须如此。
 -/
 @[simp]
@@ -685,8 +685,8 @@ abbrev SetTheory.Set.replace (A : Set) {P : A → Object → Prop}
 
 设$`A`是一个集合，对任意的$`x ∈ A`和任意的一个对象$`y`，
 假设存在一个关于$`x`和$`y`的命题$`P(x, y)`使得对任意的$`x ∈ A`，最多能够找到一个$`y`使得$`P(x, y)`为真。
-那么存在一个集合$`{y : ∃ x ∈ A, P(x, y)}`使得对任意的对象$`z`
-$`z ∈ {y : ∃ x ∈ A, P(x, y)} ↔ ∃ x ∈ A, P(x, z)`
+那么存在一个集合$`\{y : ∃ x ∈ A, P(x, y)\}`使得对任意的对象$`z`
+$`z ∈ \{y : ∃ x ∈ A, P(x, y)\} ↔ ∃ x ∈ A, P(x, z)`
 -/
 @[simp]
 theorem SetTheory.Set.replacement_axiom {A : Set} {P : A → Object → Prop}

@@ -11,7 +11,7 @@ variable [SetTheory]
 公理 3.8 万有分类
 
 假设对任意的对象$`x`，存在关于$`x`的性质$`P(x)`（于是对每一个$`x`，$`P(x)`要么是真命题，要么是假命题。）
-那么存在一个集合$`{x : P(x)}`使得对任意对象$`y`，$`y ∈ {x : P(x)} ↔ P(y)`
+那么存在一个集合$`\{x : P(x)\}`使得对任意对象$`y`，$`y ∈ \{x : P(x)\} ↔ P(y)`
 -/
 abbrev axiom_of_universal_specification : Prop :=
   ∀ P : Object → Prop, ∃ A : Set, ∀ x : Object, x ∈ A ↔ P x
@@ -23,7 +23,7 @@ theorem Russells_paradox : ¬ axiom_of_universal_specification := by
   intro h
   -- $`x`是一个集合，并且$`x ∉ x`
   set P : Object → Prop := fun x ↦ ∃ X : Set, x = X ∧ x ∉ X
-  -- 根据公理3.8，我们就能构造这样一个集合$`Ω := {x : P(x)}`
+  -- 根据公理3.8，我们就能构造这样一个集合$`Ω := \{x : P(x)\}`
   -- 即由所有不包含自身的集合构成的集合
   choose Ω hΩ using h P
   -- 现在问一个问题：$`Ω`是否包含自身？
@@ -99,7 +99,7 @@ theorem SetTheory.Set.replace_exists (h : axiom_of_universal_specification) (A :
 习题 3.2.2
 -/
 theorem SetTheory.Set.not_mem_self (A : Set) : (A : Object) ∉ A := by
-  -- 考虑单元素集合$`{A}`
+  -- 考虑单元素集合$`\{A\}`
   let A' : Set := {(A : Object)}
   have h : A' ≠ ∅ := by
     by_contra h
@@ -114,7 +114,7 @@ theorem SetTheory.Set.not_mem_self (A : Set) : (A : Object) ∉ A := by
 
 theorem SetTheory.Set.not_mem_mem (A B : Set) : (A : Object) ∉ B ∨ (B : Object) ∉ A := by
   by_contra! ⟨h1, h2⟩
-  -- 考虑集合$`{A, B}`
+  -- 考虑集合$`\{A, B\}`
   let C : Set := {(A : Object), (B : Object)}
   have h : C ≠ ∅ := by
     by_contra h

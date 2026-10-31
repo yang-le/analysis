@@ -90,11 +90,11 @@ theorem SetTheory.Set.not_P_3_3_3b_existsUnique : ¬ ∀ x, ∃! y : Nat, P_3_3_
   -- 使用$`P_3_3_3b`的定义展开hn，得到$`n + 1 = 0`，自然得出矛盾
   simp [P_3_3_3b] at hn
 
--- 另外，我们能够合理地定义这样一个与性质$`P(x, y)`有关的减少函数$`h : ℕ \ {0} → ℕ`
+-- 另外，我们能够合理地定义这样一个与性质$`P(x, y)`有关的减少函数$`h : ℕ \ \{0\} → ℕ`
 abbrev SetTheory.Set.P_3_3_3c : (Nat \ {(0 : Object)} : Set) → Nat → Prop :=
   fun x y ↦ ((y + 1 : ℕ) : Object) = x
 
--- 因为利用引理2.2.10可知，当$`x ∈ ℕ \ {0}`时，确实恰好存在一个自然数$`y`使得$`y++ = x`
+-- 因为利用引理2.2.10可知，当$`x ∈ ℕ \ \{0\}`时，确实恰好存在一个自然数$`y`使得$`y++ = x`
 theorem SetTheory.Set.P_3_3_3c_existsUnique (x : (Nat \ {(0 : Object)} : Set)) :
     ∃! y : Nat, P_3_3_3c x y := by
   obtain ⟨x, hx⟩ := x; simp at hx; obtain ⟨hx1, hx2⟩ := hx

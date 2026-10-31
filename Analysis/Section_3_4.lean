@@ -11,7 +11,7 @@ variable [SetTheory]
 定义 3.4.1 集合的象
 
 如果$`f : X → Y`是从$`X`到$`Y`的函数，并且$`S`是$`X`的一个子集，我们把$`f(S)`定义为集合
-$`f(S) := {f(x) : x ∈ S}`
+$`f(S) := \{f(x) : x ∈ S\}`
 该集合是$`Y`的一个子集，并且被称为$`S`在映射$`f`下的象
 -/
 abbrev SetTheory.Set.image {X Y : Set} (f : X → Y) (S : Set) : Set :=
@@ -67,7 +67,7 @@ theorem SetTheory.Set.mem_image_of_eval_counter :
 /--
 定义 3.4.4 逆象
 
-如果$`U`是$`Y`的一个子集，我们定义集合$`f⁻¹(U)`为$`f⁻¹(U) := {x ∈ X : f(x) ∈ U}`
+如果$`U`是$`Y`的一个子集，我们定义集合$`f⁻¹(U)`为$`f⁻¹(U) := \{x ∈ X : f(x) ∈ U\}`
 换言之，$`f⁻¹(U)`是由$`X`中所有被映射到$`U`中的元素构成的：$`f(x) ∈ U ↔ x ∈ f⁻¹(U)`
 我们称$`f⁻¹(U)`为$`U`的逆象。
 -/

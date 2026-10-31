@@ -89,7 +89,7 @@ theorem SetTheory.Set.mem_slice (x z : Object) (Y : Set) :
 定义 3.5.4 笛卡儿积
 
 如果$`X`和$`Y`是集合，那么我们定义*笛卡儿积*$`X × Y`为第一个分量在$`X`中且第二个分量在$`Y`中的全体有序对的集合，因此
-$`X × Y = {(x, y) : x ∈ X, y ∈ Y}`
+$`X × Y = \{(x, y) : x ∈ X, y ∈ Y\}`
 或等价地，
 $`a ∈ (X × Y) ↔ ∃ x ∈ X, ∃ y ∈ Y, a = (x, y)`
 -/
@@ -195,7 +195,7 @@ abbrev SetTheory.Set.tuple {I : Set} {X : I → Set} (x : ∀ i, X i) : Object :
 定义 3.5.7 $`n`重笛卡儿积
 
 如果$`(Xᵢ)_{1 ≤ i ≤ n}`是集合的有序$`n`元组，我们定义它们的*笛卡儿积*$`Π_{1 ≤ i ≤ n} Xᵢ`（也记作$`Πⁿ_{i = 1} Xᵢ`或$`X₁ × ⋯ × Xₙ`）为
-$$`Π_{1 ≤ i ≤ n} Xᵢ := {(xᵢ)_{1 ≤ i ≤ n} : ∀ 1 ≤ i ≤ n, xᵢ ∈ Xᵢ}`
+$$`Π_{1 ≤ i ≤ n} Xᵢ := \{(xᵢ)_{1 ≤ i ≤ n} : ∀ 1 ≤ i ≤ n, xᵢ ∈ Xᵢ\}`
 -/
 abbrev SetTheory.Set.iProd {I : Set} (X : I → Set) : Set :=
   ((iUnion I X) ^ I).specify (fun t ↦ ∃ x : ∀ i, X i, t = tuple x)
@@ -635,11 +635,9 @@ theorem SetTheory.Set.prod_inter (A B C : Set) : A ×ˢ (B ∩ C) = (A ×ˢ B) �
     use a, ha, b
     split_ands
     · assumption
-    · rw [hx'] at hx
-      simp at hx
+    · simp [hx'] at hx
       rwa [← hx.2]
-    · rw [hx'] at hx
-      simp at hx
+    · simp [hx'] at hx
       rwa [← hx.1, ← hx.2]
 
 theorem SetTheory.Set.prod_diff (A B C : Set) : A ×ˢ (B \ C) = (A ×ˢ B) \ (A ×ˢ C) := by
@@ -650,8 +648,7 @@ theorem SetTheory.Set.prod_diff (A B C : Set) : A ×ˢ (B \ C) = (A ×ˢ B) \ (A
     · exact ⟨a, ha, b, hb1, hx⟩
     · by_contra! h
       obtain ⟨_, _, _, hb', hx'⟩ := h
-      rw [hx'] at hx
-      simp at hx
+      simp [hx'] at hx
       rw [hx.2] at hb'
       contradiction
   · obtain ⟨⟨a, ha, b, _, _⟩, h⟩ := h
@@ -684,8 +681,7 @@ theorem SetTheory.Set.inter_prod (A B C : Set) : (A ∩ B) ×ˢ C = (A ×ˢ C) �
     use a
     split_ands
     · assumption
-    · rw [hx'] at hx
-      simp at hx
+    · simp [hx'] at hx
       rwa [← hx.1]
     · use b
 
@@ -697,8 +693,7 @@ theorem SetTheory.Set.diff_prod (A B C : Set) : (A \ B) ×ˢ C= (A ×ˢ C) \ (B 
     · exact ⟨a, ha1, b, hb, hx⟩
     · by_contra! h
       obtain ⟨_, ha', _, _, hx'⟩ := h
-      rw [hx'] at hx
-      simp at hx
+      simp [hx'] at hx
       rw [hx.1] at ha'
       contradiction
   · obtain ⟨⟨a, _, b, hb, _⟩, h⟩ := h
@@ -709,5 +704,255 @@ theorem SetTheory.Set.diff_prod (A B C : Set) : (A \ B) ×ˢ C= (A ×ˢ C) \ (B 
       have := h a ha b hb
       contradiction
     · use b
+
+/--
+习题 3.5.5
+-/
+theorem SetTheory.Set.inter_of_prod (A B C D : Set) :
+    (A ×ˢ B) ∩ (C ×ˢ D) = (A ∩ C) ×ˢ (B ∩ D) := by
+  ext x
+  constructor <;> intro h <;> simp at *
+  · obtain ⟨⟨a, ha, b, hb, hx⟩, ⟨_, hc, _, hd, hx'⟩⟩ := h
+    simp [hx] at hx'
+    rw [← hx'.1] at hc
+    rw [← hx'.2] at hd
+    exact ⟨a, ⟨ha, hc⟩, ⟨b, ⟨hb, hd⟩, hx⟩⟩
+  · obtain ⟨a, ⟨ha, hc⟩, ⟨b, ⟨hb, hd⟩, hx⟩⟩ := h
+    exact ⟨⟨a, ha, b, hb, hx⟩, ⟨a, hc, b, hd, hx⟩⟩
+
+def SetTheory.Set.union_of_prod :
+    Decidable (∀ (A B C D : Set), (A ×ˢ B) ∪ (C ×ˢ D) = (A ∪ C) ×ˢ (B ∪ D)) := by
+  apply isFalse
+  push Not
+  use ({1} : Set), ({2} : Set), ({3} : Set), ({4} : Set)
+  by_contra! h
+  have h1 : ({1} : Set) ×ˢ ({2} : Set) ∪ ({3} : Set)×ˢ ({4} : Set) = {
+      ((mk_cartesian (1 : Nat) (2 : Nat)) : Object),
+      ((mk_cartesian (3 : Nat) (4 : Nat)) : Object)} := by
+    ext x
+    refine ⟨?_, by aesop⟩
+    intro hx
+    simp at *
+    assumption
+  have h2 : (({1} : Set) ∪ ({3} : Set)) ×ˢ (({2} : Set) ∪ ({4} : Set)) = {
+      ((mk_cartesian (1 : Nat) (2 : Nat)) : Object),
+      ((mk_cartesian (1 : Nat) (4 : Nat)) : Object),
+      ((mk_cartesian (3 : Nat) (2 : Nat)) : Object),
+      ((mk_cartesian (3 : Nat) (4 : Nat)) : Object)} := by
+    ext x; aesop
+  rw [h1, h2] at h
+  have : ((mk_cartesian (1 : Nat) (4 : Nat)) : Object) ∈ ({
+    ((mk_cartesian (1 : Nat) (2 : Nat)) : Object),
+    ((mk_cartesian (3 : Nat) (4 : Nat)) : Object)} : Set) := by aesop
+  simp at this
+  obtain (h' | h') := this <;>
+  unfold mk_cartesian at h' <;>
+  simp at h'
+  · change 4 = 2 at h'
+    norm_num at h'
+  · change 1 = 3 at h'
+    norm_num at h'
+
+def SetTheory.Set.diff_of_prod :
+    Decidable (∀ (A B C D : Set), (A ×ˢ B) \ (C ×ˢ D) = (A \ C) ×ˢ (B \ D)) := by
+  apply isFalse
+  push Not
+  use ({1} : Set), ({2} : Set), ({1} : Set), ({3} : Set)
+  by_contra h
+  have h1 : (({1} : Set) ×ˢ ({2} : Set)) \ (({1} : Set) ×ˢ ({3} : Set)) = {((mk_cartesian (1 : Nat) (2 : Nat)) : Object)} := by
+    ext x
+    refine ⟨by aesop, ?_⟩
+    intro hx
+    simp at *
+    constructor
+    · assumption
+    · by_contra
+      rw [this] at hx
+      unfold mk_cartesian at hx
+      simp at hx
+      change 1 = 1 ∧ 3 = 2 at hx
+      norm_num at hx
+  have h2 : (({1} : Set) \ ({1} : Set)) ×ˢ (({2} : Set) \ ({3} : Set)) = ∅ := by aesop
+  rw [h1, h2] at h
+  have : ((mk_cartesian (1 : Nat) (2 : Nat)) : Object) ∈ (∅ : Set) := by rw [← h]; simp
+  exact not_mem_empty _ this
+
+/--
+习题 3.5.6
+-/
+theorem SetTheory.Set.prod_subset_prod {A B C D : Set} (hA : A ≠ ∅) (hB : B ≠ ∅) :
+    A ×ˢ B ⊆ C ×ˢ D ↔ A ⊆ C ∧ B ⊆ D := by
+  constructor
+  · intro h
+    constructor
+    · intro x hx
+      obtain ⟨y, hy⟩ := nonempty_def hB
+      have : (mk_cartesian ⟨x, hx⟩ ⟨y, hy⟩).val ∈ A ×ˢ B := by aesop
+      obtain ⟨x', y', h'⟩ := (mem_cartesian _ _ _).mp (h _ this)
+      unfold mk_cartesian at h'
+      simp at h'
+      rw [h'.1]
+      exact x'.property
+    · intro y hy
+      obtain ⟨x, hx⟩ := nonempty_def hA
+      have : (mk_cartesian ⟨x, hx⟩ ⟨y, hy⟩).val ∈ A ×ˢ B := by aesop
+      obtain ⟨x', y', h'⟩ := (mem_cartesian _ _ _).mp (h _ this)
+      unfold mk_cartesian at h'
+      simp at h'
+      rw [h'.2]
+      exact y'.property
+  · intro ⟨h1, h2⟩ x hx
+    obtain ⟨x1, x2, _⟩ := (mem_cartesian _ _ _).mp hx
+    rw [mem_cartesian]
+    use ⟨x1, h1 _ x1.property⟩, ⟨x2, h2 _ x2.property⟩
+
+def SetTheory.Set.prod_subset_prod' :
+    Decidable (∀ (A B C D : Set), A ×ˢ B ⊆ C ×ˢ D ↔ A ⊆ C ∧ B ⊆ D) := by
+  apply isFalse
+  push Not
+  use (∅ : Set), ({1} : Set), ({2} : Set), ({3} : Set)
+  left
+  constructor
+  · intro x h
+    simp at h
+  · intro
+    by_contra h
+    have : 1 ∈ ({1} : Set) := by simp
+    have := (mem_singleton _ _).mp (h _ this)
+    simp at this
+
+/--
+习题 3.5.7
+-/
+theorem SetTheory.Set.direct_sum {X Y Z : Set} (f : Z → X) (g : Z → Y) :
+    ∃! h : Z → X ×ˢ Y, fst ∘ h = f ∧ snd ∘ h = g := by
+  use fun z ↦ mk_cartesian (f z) (g z)
+  split_ands
+  · ext; simp
+  · ext; simp
+  · intro h' hh'
+    ext x; aesop
+
+/--
+习题 3.5.8
+-/
+@[simp]
+theorem SetTheory.Set.iProd_empty_iff {n : ℕ} {X : Fin n → Set} :
+    iProd X = ∅ ↔ ∃ i, X i = ∅ := by
+  · constructor
+    · intro h
+      by_contra! h'
+      let f (i : Fin n) : X i :=⟨(nonempty_def (h' i)).choose, (nonempty_def (h' i)).choose_spec⟩
+      have := tuple_mem_iProd f
+      simp [h] at this
+    · intro ⟨i, h⟩
+      by_contra! h'
+      obtain ⟨x, hx⟩ := nonempty_def h'
+      obtain ⟨x', _⟩ := (mem_iProd _).mp hx
+      have := (x' i).property
+      simp [h] at this
+
+/--
+习题 3.5.9
+-/
+theorem SetTheory.Set.iUnion_inter_iUnion {I J : Set} (A : I → Set) (B : J → Set) :
+    (iUnion I A) ∩ (iUnion J B) = iUnion (I ×ˢ J) (fun p ↦ (A (fst p)) ∩ (B (snd p))) := by
+  ext x
+  constructor
+  · intro h
+    simp [mem_iUnion] at *
+    obtain ⟨⟨a, ha, hx⟩, ⟨b, hb, hx'⟩⟩ := h
+    use a, b, ⟨ha, hb⟩
+    constructor <;>
+    simpa [show OrderedPair.toObject ⟨a, b⟩ = mk_cartesian ⟨a, ha⟩ ⟨b, hb⟩ by rfl]
+  · intro h
+    simp [mem_iUnion] at *
+    obtain ⟨a, b, ⟨ha, hb⟩, hx, hx'⟩ := h
+    constructor
+    · use a, ha
+      simp [show OrderedPair.toObject ⟨a, b⟩ = mk_cartesian ⟨a, ha⟩ ⟨b, hb⟩ by rfl] at hx
+      assumption
+    · use b, hb
+      simp [show OrderedPair.toObject ⟨a, b⟩ = mk_cartesian ⟨a, ha⟩ ⟨b, hb⟩ by rfl] at hx'
+      assumption
+
+/--
+习题 3.5.10
+-/
+abbrev SetTheory.Set.graph {X Y : Set} (f : X → Y) : Set :=
+    (X ×ˢ Y).specify (fun p ↦ (f (fst p) = snd p))
+
+theorem SetTheory.Set.graph_inj {X Y : Set} (f f' : X → Y) :
+    graph f = graph f' ↔ f = f' := by
+  refine ⟨?_, by aesop⟩
+  intro h
+  ext x
+  have : (mk_cartesian x (f x)).val ∈ graph f := by
+    simp
+    use x, x.property, (f x), (f x).property
+    rfl
+  rw [h] at this
+  simp at this
+  simp only [this.2]
+
+theorem SetTheory.Set.is_graph {X Y G : Set} (hG : G ⊆ X ×ˢ Y)
+  (hvert : ∀ x : X, ∃! y : Y, ((⟨x, y⟩ : OrderedPair) : Object) ∈ G) :
+    ∃! f : X → Y, G = graph f := by
+  use fun x ↦ (hvert x).choose
+  constructor
+  · simp; ext x
+    constructor
+    · intro hx
+      rw [specification_axiom'']
+      use hG _ hx
+      generalize_proofs h hx'
+      obtain ⟨x1, x2, h1⟩ := (mem_cartesian _ _ _).mp hx'
+      have hx1 : fst ⟨x, hx'⟩ = x1 := by
+        simp [h1]
+        change fst (mk_cartesian x1 x2) = x1
+        simp
+      have hx2 : snd ⟨x, hx'⟩ = x2 := by
+        simp [h1]
+        change snd (mk_cartesian x1 x2) = x2
+        simp
+      rw [hx1, hx2]
+      obtain ⟨h2, h3⟩ := (hvert ⟨x1, x1.property⟩).choose_spec
+      rw [h1] at hx
+      rw [← h3 x2 hx] at h2
+      simp [← (h x1).choose_spec.2 x2 x2.property h2]
+    · intro hx
+      rw [specification_axiom''] at hx
+      obtain ⟨hx, h⟩ := hx
+      obtain ⟨x1, x2, h1⟩ := (mem_cartesian _ _ _).mp hx
+      have hx1 : x1 = fst ⟨x, hx⟩ := by
+        simp [h1]
+        change x1 = fst (mk_cartesian x1 x2)
+        simp
+      have hx2 : x2 = snd ⟨x, hx⟩ := by
+        simp [h1]
+        change x2 = snd (mk_cartesian x1 x2)
+        simp
+      generalize_proofs h2 at h
+      obtain ⟨h3, _⟩ := (h2 x1).choose_spec
+      simp only [h, hx1] at h3
+      rwa [h1, hx1, hx2]
+  · intro y rfl
+    ext x
+    generalize_proofs h
+    have h1 := h.choose_spec.1
+    simp [specification_axiom''] at h1
+    obtain ⟨_, _, hy⟩ := hvert x
+    simp [specification_axiom''] at hy
+    have := hy h.choose (h.choose).property
+    simp at this
+    simp [this h1]
+    have := hy (y x) (y x).property
+    generalize_proofs h2 at this
+    have h3 : y (fst ⟨OrderedPair.toObject { fst := ↑x, snd := ↑(y x) }, h2⟩) =
+        snd ⟨OrderedPair.toObject { fst := ↑x, snd := ↑(y x) }, h2⟩ := by
+      change y (fst (mk_cartesian x (y x))) = snd (mk_cartesian x (y x))
+      simp
+    simp at this
+    simp [this h3]
 
 end Chapter3
