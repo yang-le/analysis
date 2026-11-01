@@ -958,7 +958,9 @@ theorem SetTheory.Set.is_graph {X Y G : Set} (hG : G ⊆ X ×ˢ Y)
 /--
 习题 3.5.11
 
-不使用{lean}`SetTheory.Set.powerset_axiom`，而是使用{lean}`SetTheory.Set.exists_powerset`
+不直接使用{lean}`SetTheory.Set.powerset_axiom`，而是使用{lean}`SetTheory.Set.exists_powerset`。
+这表明{lean}`SetTheory.Set.exists_powerset`可以替代幂集公理。
+换言之，如果把{lean}`SetTheory.Set.exists_powerset`当作公理，那么幂集公理就变为一个可证明的定理。
 -/
 theorem SetTheory.Set.powerset_axiom' (X Y : Set) :
     ∃! S : Set, ∀ (F : Object), F ∈ S ↔ ∃ f : X → Y, f = F := by
@@ -1031,5 +1033,102 @@ theorem SetTheory.Set.powerset_axiom' (X Y : Set) :
     · intro hx
       rw [hG']
       exact mem_G' hx
+
+lemma SetTheory.Set.l_3_5_12 {X : Set} (N : ℕ) (f : nat → X → X) (c : X) :
+    ∃! a : Fin (N + 1) → X, a (Fin_mk (N + 1) 0 (by simp)) = c
+    ∧ ∀ n (hn : n < N), a (Fin_mk (N + 1) (n + 1) (by simpa)) = f n (a (Fin_mk (N + 1) n (by linarith))) := by
+  induction' N with N hN
+  · apply existsUnique_of_exists_of_unique
+    · use fun _ ↦ c
+      simp
+    · simp
+      intro f1 f2 hf1 hf2
+      ext x
+      have : x = Fin_mk 1 0 (by simp) := by
+        have := x.property
+        rw [mem_Fin] at this
+        aesop
+      simp [this, hf1, hf2]
+  · obtain ⟨a, ⟨h1, h2⟩, h3⟩ := hN
+    simp at h3
+    apply existsUnique_of_exists_of_unique
+    · use fun i ↦
+        if h : i = N + 1 then
+          f N (a (Fin_mk (N + 1) N (by linarith)))
+        else
+          a (Fin_mk (N + 1) i (lt_of_le_of_ne (Nat.lt_succ_iff.mp (Fin.toNat_lt i)) h))
+      simp; constructor
+      · assumption
+      · intro n hn
+        by_cases hn : n = N
+        · simp [hn]
+        · simp [hn, show n ≠ N + 1 by aesop]
+          exact h2 n (by grind only)
+    · intro y1 y2 ⟨hy1a, hy1b⟩ ⟨hy2a, hy2b⟩
+      ext x
+      obtain ⟨hx, heq⟩ := Fin.toNat_spec x
+      have : ∀ n (hn : n < N + 1 + 1), y1 (Fin_mk (N + 1 + 1) n hn) = y2  (Fin_mk (N + 1 + 1) n hn) := by
+        intro n hn
+        induction' n with n hn'
+        · rw [hy1a, hy2a]
+        · have h : n < N + 1 := by simp_all
+          rw [hy1b n h, hy2b n h, hn']
+      simp only [heq.symm ▸ this x hx]
+
+/--
+习题 3.5.12
+
+不使用命题 2.1.16
+-/
+theorem SetTheory.Set.recursion (X : Set) (f : nat → X → X) (c : X) :
+    ∃! a : nat → X, a 0 = c ∧ ∀ n, a (n + 1 : ℕ) = f n (a n) := by
+  let a (n : nat) : X := (l_3_5_12 (n + 1) f c).choose (Fin_mk (n + 1 + 1) n (by simp))
+  have ha (n : nat) := (l_3_5_12 (n + 1) f c).choose_spec
+  apply existsUnique_of_exists_of_unique
+  · use a
+    constructor
+    · simp [a, (ha 0).1.1]
+    · intro n
+      have := ha n
+      simp at this
+      have := this.1.2 n (by simp)
+      simp [a]
+      -- use Fin_embed
+      sorry
+  sorry
+
+/-
+(Warning: this is challenging.) Prove without using any properties of the natural numbers
+other than the Peano axioms directly (in particular, without using the ordering of the natural
+numbers, and without appealing to Proposition 2.1.16). (Hint: first show inductively, using
+only the Peano axioms and basic set theory, that for every natural number N ∈ ℕ,there exists
+a unique pair A_N, B_N of subsets of ℕ which obeys the following properties: (a) A_N ∩ B_N = ∅,
+(b) A_N ∪ B_N = ℕ, (c) 0∈ A_N, (d) N++ ∈ B_N, (e) Whenever n ∈ B_N, we have n++ ∈ B_N.
+(f) Whenever n ∈ A_N and n ≠ N, we have n++ ∈ A_N. Once one obtains these sets, use A_N
+as a substitute for {n ∈ N : n ≤ N} in the previous argument.)
+-/
+
+/--
+习题 3.5.13
+-/
+theorem SetTheory.Set.nat_unique (nat' : Set) (zero : nat') (succ : nat' → nat')
+  (succ_ne : ∀ n : nat', succ n ≠ zero) (succ_of_ne : ∀ n m : nat', n ≠ m → succ n ≠ succ m)
+  (ind : ∀ P : nat' → Prop, P zero → (∀ n, P n → P (succ n)) → ∀ n, P n) :
+    ∃! f : nat → nat', Function.Bijective f ∧ f 0 = zero
+    ∧ ∀ (n : nat) (n' : nat'), f n = n' ↔ f (n + 1 : ℕ) = succ n' := by
+  have nat_coe_eq {m : nat} {n} : (m : ℕ) = n → m = n := by aesop
+  have nat_coe_eq_zero {m : nat} : (m : ℕ) = 0 → m = 0 := nat_coe_eq
+  obtain ⟨f, hf⟩ := recursion nat' sorry sorry
+  apply existsUnique_of_exists_of_unique
+  · use f
+    constructor
+    · constructor
+      · intro x1 x2 heq
+        induction' hx1 : (x1 : ℕ) with i ih generalizing x1 x2
+        · sorry
+        sorry
+      sorry
+    sorry
+  sorry
 
 end Chapter3

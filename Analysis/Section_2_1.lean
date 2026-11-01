@@ -134,7 +134,7 @@ abbrev Nat.recurse (f : Nat → Nat → Nat) (c : Nat) : Nat → Nat := fun n �
 | n++ => f n (recurse f c n)
 
 /--
-命题 2.16 递归定义
+命题 2.1.16 递归定义
 
 假设对任意自然数$`n`，都存在某个从自然数系到自然数系的函数$`fₙ : ℕ → ℕ`，令$`c`为某个固定的自然数。
 那么对任意自然数$`n`，都能够确定唯一的自然数$`aₙ`，使得$`a₀ = c`以及$`a_{n++} = fₙ(aₙ)`恒成立。
@@ -142,7 +142,7 @@ abbrev Nat.recurse (f : Nat → Nat → Nat) (c : Nat) : Nat → Nat := fun n �
 theorem Nat.recurse_zero (f : Nat → Nat → Nat) (c : Nat) : Nat.recurse f c 0 = c := by rfl
 
 /--
-命题 2.16 递归定义
+命题 2.1.16 递归定义
 
 假设对任意自然数$`n`，都存在某个从自然数系到自然数系的函数$`fₙ : ℕ → ℕ`，令$`c`为某个固定的自然数。
 那么对任意自然数$`n`，都能够确定唯一的自然数$`aₙ`，使得$`a₀ = c`以及$`a_{n++} = fₙ(aₙ)`恒成立。
@@ -151,7 +151,7 @@ theorem Nat.recurse_succ (f : Nat → Nat → Nat) (c : Nat) (n : Nat) :
     Nat.recurse f c (n++) = f n (recurse f c n) := by rfl
 
 /--
-命题 2.16 递归定义
+命题 2.1.16 递归定义
 
 假设对任意自然数$`n`，都存在某个从自然数系到自然数系的函数$`fₙ : ℕ → ℕ`，令$`c`为某个固定的自然数。
 那么对任意自然数$`n`，都能够确定唯一的自然数$`aₙ`，使得$`a₀ = c`以及$`a_{n++} = fₙ(aₙ)`恒成立。
@@ -171,7 +171,7 @@ theorem Nat.eq_recurse (f : Nat → Nat → Nat) (c : Nat) (a : Nat → Nat) :
   exact recurse_succ _ _
 
 /--
-命题 2.16 递归定义
+命题 2.1.16 递归定义
 
 假设对任意自然数$`n`，都存在某个从自然数系到自然数系的函数$`fₙ : ℕ → ℕ`，令$`c`为某个固定的自然数。
 那么对任意自然数$`n`，都能够确定*唯一*的自然数$`aₙ`，使得$`a₀ = c`以及$`a_{n++} = fₙ(aₙ)`恒成立。
