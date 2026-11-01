@@ -839,18 +839,18 @@ theorem SetTheory.Set.direct_sum {X Y Z : Set} (f : Z → X) (g : Z → Y) :
 @[simp]
 theorem SetTheory.Set.iProd_empty_iff {n : ℕ} {X : Fin n → Set} :
     iProd X = ∅ ↔ ∃ i, X i = ∅ := by
-  · constructor
-    · intro h
-      by_contra! h'
-      let f (i : Fin n) : X i :=⟨(nonempty_def (h' i)).choose, (nonempty_def (h' i)).choose_spec⟩
-      have := tuple_mem_iProd f
-      simp [h] at this
-    · intro ⟨i, h⟩
-      by_contra! h'
-      obtain ⟨x, hx⟩ := nonempty_def h'
-      obtain ⟨x', _⟩ := (mem_iProd _).mp hx
-      have := (x' i).property
-      simp [h] at this
+  constructor
+  · intro h
+    by_contra! h'
+    let f (i : Fin n) : X i :=⟨(nonempty_def (h' i)).choose, (nonempty_def (h' i)).choose_spec⟩
+    have := tuple_mem_iProd f
+    simp [h] at this
+  · intro ⟨i, h⟩
+    by_contra! h'
+    obtain ⟨x, hx⟩ := nonempty_def h'
+    obtain ⟨x', _⟩ := (mem_iProd _).mp hx
+    have := (x' i).property
+    simp [h] at this
 
 /--
 习题 3.5.9
@@ -954,5 +954,82 @@ theorem SetTheory.Set.is_graph {X Y G : Set} (hG : G ⊆ X ×ˢ Y)
       simp
     simp at this
     simp [this h3]
+
+/--
+习题 3.5.11
+
+不使用{lean}`SetTheory.Set.powerset_axiom`，而是使用{lean}`SetTheory.Set.exists_powerset`
+-/
+theorem SetTheory.Set.powerset_axiom' (X Y : Set) :
+    ∃! S : Set, ∀ (F : Object), F ∈ S ↔ ∃ f : X → Y, f = F := by
+  obtain ⟨Z, h⟩ := exists_powerset (X ×ˢ Y)
+  let P1 (z : Z) := ∃ g : Set, z = (g : Object) ∧ ∀ x : X, ∃! y : Y, ((⟨x, y⟩ : OrderedPair) : Object) ∈ g
+  let P2 (g : Z.specify P1) (f : Object) := ∃ G : Set, (G : Object) = g ∧ ∃! F : X → Y, (F : Object) = f ∧ G = graph F
+  let G := (Z.specify P1).replace (P := P2) (by
+    intro _ _ _ ⟨⟨_, hG, F, hF, _⟩, ⟨_, hG', F', hF', _⟩⟩
+    have : graph F = graph F' := by
+      rw [← hF.2, ← hF'.2]
+      simp [← hG'] at hG
+      assumption
+    simp [← hF.1, ← hF'.1, (graph_inj _ _).mp this]
+  )
+  have mem_G {f : X.toSubtype → Y.toSubtype} {F : Object} (hf : f = F) : F ∈ G := by
+    rw [replacement_axiom]
+    let G := graph f
+    have h' : (G : Object) ∈ Z := by
+      rw [h]; use G; simp
+      intro _ hG
+      have : G ⊆ X ×ˢ Y := by
+        intro _ hx
+        rw [specification_axiom''] at hx
+        use hx.1
+      exact this _ hG
+    use ⟨G, by
+      rw [specification_axiom'']
+      use h', G; simp
+      intro x hx
+      use f ⟨x, hx⟩; simp
+      constructor
+      · unfold G
+        simp [specification_axiom'']
+        use hx
+        change f (fst (mk_cartesian ⟨x, hx⟩ (f ⟨x, hx⟩))) = snd (mk_cartesian ⟨x, hx⟩ (f ⟨x, hx⟩))
+        simp
+      · intro y hy hG
+        rw [specification_axiom''] at hG
+        obtain ⟨h1, h2⟩ := hG
+        change f (fst (mk_cartesian ⟨x, hx⟩ ⟨y, hy⟩)) = snd (mk_cartesian ⟨x, hx⟩ ⟨y, hy⟩) at h2
+        simp at h2
+        exact h2.symm
+    ⟩, G
+    constructor
+    · simp
+    · use f; simp
+      constructor
+      · exact ⟨hf, by rfl⟩
+      · intro _ hy _
+        simp [← hf] at hy
+        assumption
+  have mem_G' {F : Object} (hF : F ∈ G) : ∃ f : X.toSubtype → Y.toSubtype, f = F := by
+    rw [replacement_axiom] at hF
+    obtain ⟨_, _, _, f, hf, _⟩ := hF
+    exact ⟨f, hf.1⟩
+  use G
+  constructor
+  · intro F
+    constructor
+    · intro hF
+      exact mem_G' hF
+    · intro ⟨_, hf⟩
+      exact mem_G hf
+  · intro G' hG'
+    ext x; constructor
+    · intro hx
+      rw [hG'] at hx
+      obtain ⟨_, hf⟩ := hx
+      exact mem_G hf
+    · intro hx
+      rw [hG']
+      exact mem_G' hx
 
 end Chapter3

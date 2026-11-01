@@ -177,7 +177,7 @@ theorem SetTheory.Set.example_3_4_9 (F : Object) :
 /--
 引理 3.4.9
 
-设$`X`是一个集合，那么$`{Y : Y ⊆ X}`是一个集合
+设$`X`是一个集合，那么$`\{Y : Y ⊆ X\}`是一个集合
 -/
 def SetTheory.Set.powerset (X : Set) : Set :=
   (({0, 1} ^ X) : Set).replace (P := fun x y ↦ ∃ f : X → ({0, 1} : Set), f = x.val ∧ y = preimage f {1}) (by simp)
