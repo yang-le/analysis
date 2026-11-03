@@ -1034,7 +1034,7 @@ theorem SetTheory.Set.powerset_axiom' (X Y : Set) :
       rw [hG']
       exact mem_G' hx
 
-lemma SetTheory.Set.l_3_5_12 {X : Set} (N : ℕ) (f : nat → X → X) (c : X) :
+lemma SetTheory.Set.Fin_recursion {X : Set} (N : ℕ) (f : nat → X → X) (c : X) :
     ∃! a : Fin (N + 1) → X, a (Fin_mk (N + 1) 0 (by simp)) = c
     ∧ ∀ n (hn : n < N), a (Fin_mk (N + 1) (n + 1) (by simpa)) = f n (a (Fin_mk (N + 1) n (by linarith))) := by
   induction' N with N hN
@@ -1082,26 +1082,41 @@ lemma SetTheory.Set.l_3_5_12 {X : Set} (N : ℕ) (f : nat → X → X) (c : X) :
 -/
 theorem SetTheory.Set.recursion (X : Set) (f : nat → X → X) (c : X) :
     ∃! a : nat → X, a 0 = c ∧ ∀ n, a (n + 1 : ℕ) = f n (a n) := by
-  let a (n : nat) : X := (l_3_5_12 (n + 1) f c).choose (Fin_mk (n + 1 + 1) n (by simp))
-  have ha (n : nat) := (l_3_5_12 (n + 1) f c).choose_spec
+  let aN (n : ℕ) : X := (Fin_recursion (n + 1) f c).choose (Fin_mk (n + 2) n (by simp))
+  let ha (n : ℕ) := (Fin_recursion (n + 1) f c).choose_spec
   apply existsUnique_of_exists_of_unique
-  · use a
+  · use fun x ↦ aN x
     constructor
-    · simp [a, (ha 0).1.1]
+    · simp [aN, (ha 0).1.1]
     · intro n
-      have := ha n
-      simp at this
-      have := this.1.2 n (by simp)
-      simp [a]
+      simp [aN, (ha (n + 1)).1.2 n (by simp)]
+      congr
+      -- show (Fin_recursion (n + 2) f c).choose Fin_mk (n + 3) n (by simp)
+      --    = (Fin_recursion (n + 1) f c).choose Fin_mk (n + 2) n (by simp)
       -- use Fin_embed
-      sorry
-  sorry
+      let bN (n : ℕ) : X := (Fin_recursion (n + 2) f c).choose (Fin_mk (n + 3) n (by simp))
+      have : aN n = bN n := by
+        -- 利用aN n的唯一性条件
+        let hUniq := (ha n).2
+        simp at hUniq
+        -- 这里需要把bN表述为Fin (n + 2) → X的形式
+        let a : Fin (n + 2) → X := (Fin_recursion (n + 1) f c).choose
+        let b : Fin (n + 2) → X := fun i ↦ (Fin_recursion (n + 2) f c).choose (Fin_embed (n + 2) (n + 3) (by simp) i)
+        have : a = b := by
+          simp [a]; symm
+          apply hUniq b
+          · simp [b, (ha (n + 1)).1.1]
+          · intro n' _
+            simp [b, (ha (n + 1)).1.2 n' (by omega)]
+        simp only [this, aN, bN, a, b]
+      simp only [this, aN, bN]
+  · sorry
 
 /-
 (Warning: this is challenging.) Prove without using any properties of the natural numbers
 other than the Peano axioms directly (in particular, without using the ordering of the natural
 numbers, and without appealing to Proposition 2.1.16). (Hint: first show inductively, using
-only the Peano axioms and basic set theory, that for every natural number N ∈ ℕ,there exists
+only the Peano axioms and basic set theory, that for every natural number N ∈ ℕ, there exists
 a unique pair A_N, B_N of subsets of ℕ which obeys the following properties: (a) A_N ∩ B_N = ∅,
 (b) A_N ∪ B_N = ℕ, (c) 0∈ A_N, (d) N++ ∈ B_N, (e) Whenever n ∈ B_N, we have n++ ∈ B_N.
 (f) Whenever n ∈ A_N and n ≠ N, we have n++ ∈ A_N. Once one obtains these sets, use A_N
