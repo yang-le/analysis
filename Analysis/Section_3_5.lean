@@ -1075,6 +1075,17 @@ lemma SetTheory.Set.Fin_recursion {X : Set} (N : ℕ) (f : nat → X → X) (c :
           rw [hy1b n h, hy2b n h, hn']
       simp only [heq.symm ▸ this x hx]
 
+/-
+(Warning: this is challenging.) Prove without using any properties of the natural numbers
+other than the Peano axioms directly (in particular, without using the ordering of the natural
+numbers, and without appealing to Proposition 2.1.16). (Hint: first show inductively, using
+only the Peano axioms and basic set theory, that for every natural number N ∈ ℕ, there exists
+a unique pair A_N, B_N of subsets of ℕ which obeys the following properties: (a) A_N ∩ B_N = ∅,
+(b) A_N ∪ B_N = ℕ, (c) 0∈ A_N, (d) N++ ∈ B_N, (e) Whenever n ∈ B_N, we have n++ ∈ B_N.
+(f) Whenever n ∈ A_N and n ≠ N, we have n++ ∈ A_N. Once one obtains these sets, use A_N
+as a substitute for {n ∈ N : n ≤ N} in the previous argument.)
+-/
+
 /--
 习题 3.5.12
 
@@ -1110,18 +1121,32 @@ theorem SetTheory.Set.recursion (X : Set) (f : nat → X → X) (c : X) :
             simp [b, (ha (n + 1)).1.2 n' (by omega)]
         simp only [this, aN, bN, a, b]
       simp only [this, aN, bN]
-  · sorry
-
-/-
-(Warning: this is challenging.) Prove without using any properties of the natural numbers
-other than the Peano axioms directly (in particular, without using the ordering of the natural
-numbers, and without appealing to Proposition 2.1.16). (Hint: first show inductively, using
-only the Peano axioms and basic set theory, that for every natural number N ∈ ℕ, there exists
-a unique pair A_N, B_N of subsets of ℕ which obeys the following properties: (a) A_N ∩ B_N = ∅,
-(b) A_N ∪ B_N = ℕ, (c) 0∈ A_N, (d) N++ ∈ B_N, (e) Whenever n ∈ B_N, we have n++ ∈ B_N.
-(f) Whenever n ∈ A_N and n ≠ N, we have n++ ∈ A_N. Once one obtains these sets, use A_N
-as a substitute for {n ∈ N : n ≤ N} in the previous argument.)
--/
+  · intro y1 y2 ⟨hy1a, hy1b⟩ ⟨hy2a, hy2b⟩
+    ext n
+    let hUniq := (ha n).2
+    simp at hUniq
+    let a : Fin (n + 2) → X := (Fin_recursion (n + 1) f c).choose
+    let y1N (n : ℕ) : X := y1 n
+    have h1 : aN n = y1N n := by
+      let y1 : Fin (n + 2) → X := fun i ↦ y1N (i : ℕ)
+      have : a = y1 := by
+        simp [a]; symm
+        apply hUniq y1
+        · simp [y1, y1N, ← hy1a]; congr
+        · intro n' _
+          simp [y1, y1N, hy1b]
+      simp [this, aN, y1N, a, y1]
+    let y2N (n : ℕ) : X := y2 n
+    have h2 : aN n = y2N n := by
+      let y2 : Fin (n + 2) → X := fun i ↦ y2N (i : ℕ)
+      have : a = y2 := by
+        simp [a]; symm
+        apply hUniq y2
+        · simp [y2, y2N, ← hy2a]; congr
+        · intro n' _
+          simp [y2, y2N, hy2b]
+      simp [this, aN, y2N, a, y2]
+    simp_all only [nat_equiv_coe_of_coe', aN, y1N, y2N]
 
 /--
 习题 3.5.13
@@ -1133,17 +1158,52 @@ theorem SetTheory.Set.nat_unique (nat' : Set) (zero : nat') (succ : nat' → nat
     ∧ ∀ (n : nat) (n' : nat'), f n = n' ↔ f (n + 1 : ℕ) = succ n' := by
   have nat_coe_eq {m : nat} {n} : (m : ℕ) = n → m = n := by aesop
   have nat_coe_eq_zero {m : nat} : (m : ℕ) = 0 → m = 0 := nat_coe_eq
-  obtain ⟨f, hf⟩ := recursion nat' sorry sorry
+  obtain ⟨f, hf⟩ := recursion nat' (fun _ x ↦ succ x) zero
   apply existsUnique_of_exists_of_unique
   · use f
     constructor
     · constructor
       · intro x1 x2 heq
         induction' hx1 : (x1 : ℕ) with i ih generalizing x1 x2
-        · sorry
-        sorry
-      sorry
+        · rw [nat_coe_eq_zero hx1, hf.1.1] at heq
+          rw [nat_coe_eq_zero hx1]
+          induction' hx2 : (x2 : ℕ) with i' ih' generalizing x2
+          · rw [nat_coe_eq_zero hx2]
+          · rw [nat_coe_eq hx2, hf.1.2 i'] at heq
+            have := (succ_ne (f i')).symm
+            contradiction
+        · rw [nat_coe_eq hx1, hf.1.2 i] at heq
+          rw [nat_coe_eq hx1]
+          induction' hx2 : (x2 : ℕ) with i' ih' generalizing x2
+          · rw [nat_coe_eq_zero hx2, hf.1.1] at heq
+            have := succ_ne (f i)
+            contradiction
+          · rw [nat_coe_eq hx2, hf.1.2 i'] at heq
+            rw [nat_coe_eq hx2]; simp
+            have : f i = f i' := by
+              by_contra! h
+              have := succ_of_ne _ _ h
+              contradiction
+            exact (nat_equiv_inj _ _).mp (ih this (by simp))
+      · intro y
+        apply ind (fun x ↦ ∃ a, f a = x)
+        · use 0; exact hf.1.1
+        · intro y' ⟨a, ha⟩
+          use (a + 1 : ℕ)
+          rw [← ha, hf.1.2 a]
+          congr; simp
+    · refine ⟨hf.1.1, ?_⟩
+      intro n n'
+      refine ⟨by aesop, ?_⟩
+      intro h
+      simp [hf.1.2 n] at h
+      by_contra!
+      have := succ_of_ne _ _ this
+      contradiction
+  · intro y1 y2 ⟨h1a, h1b, h1c⟩ ⟨h2a, h2b, h2c⟩
+    have hUniq := hf.2
+    simp at hUniq
+    have := hUniq y1 h1b
     sorry
-  sorry
 
 end Chapter3
