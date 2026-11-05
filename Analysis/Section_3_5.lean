@@ -1200,10 +1200,26 @@ theorem SetTheory.Set.nat_unique (nat' : Set) (zero : nat') (succ : nat' → nat
       by_contra!
       have := succ_of_ne _ _ this
       contradiction
-  · intro y1 y2 ⟨h1a, h1b, h1c⟩ ⟨h2a, h2b, h2c⟩
+  · intro y1 y2 ⟨_, h1b, h1c⟩ ⟨_, h2b, h2c⟩
     have hUniq := hf.2
     simp at hUniq
-    have := hUniq y1 h1b
-    sorry
+    have : ∀ n : ℕ, y1 (n + 1 : ℕ) = succ (y1 n) := by
+      intro n
+      induction' n with n hn
+      · change y1 1 = succ (y1 0)
+        rw [h1b, ← (h1c 0 zero).mp h1b]
+        simp; change y1 1 = y1 1; rfl
+      · rw [hn, ← (h1c (n + 1 : ℕ) (succ (y1 n))).mp hn]
+        simp
+    rw [hUniq y1 h1b this]
+    have : ∀ n : ℕ, y2 (n + 1 : ℕ) = succ (y2 n) := by
+      intro n
+      induction' n with n hn
+      · change y2 1 = succ (y2 0)
+        rw [h2b, ← (h2c 0 zero).mp h2b]
+        simp; change y2 1 = y2 1; rfl
+      · rw [hn, ← (h2c (n + 1 : ℕ) (succ (y2 n))).mp hn]
+        simp
+    rw [hUniq y2 h2b this]
 
 end Chapter3
