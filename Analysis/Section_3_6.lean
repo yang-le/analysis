@@ -208,7 +208,7 @@ theorem SetTheory.Set.has_card_zero {X : Set} : X.has_card 0 ↔ X = ∅ := by
 
 假设$`n ≥ 1`，且$`X`的基数为$`n`，如果$`x`是$`X`中任意一个元素，那么集合$`X - \{x\}`（即$`X`中去掉$`x`之后剩下的元素构成的集合）的基数为$`n - 1`.
 -/
-theorem SetTheory.Set.card_earse {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_card n) (x : X) :
+theorem SetTheory.Set.card_erase {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_card n) (x : X) :
     (X \ {x.val}).has_card (n - 1) := by
   rw [has_card_iff] at hX; choose f hf using hX
   set X' : Set := X \ {x.val}
@@ -310,7 +310,7 @@ theorem SetTheory.Set.card_uniq {X : Set} {n m : ℕ} (h1 : X.has_card n) (h2 : 
   have : X ≠ ∅ := pos_card_nonempty (by omega) h1
   choose x hx using nonempty_def this
   have : m ≠ 0 := by contrapose! this; simpa [has_card_zero, this] using h2
-  specialize hn (card_earse ?_ h1 ⟨_, hx⟩) (card_earse ?_ h2 ⟨_, hx⟩) <;> omega
+  specialize hn (card_erase ?_ h1 ⟨_, hx⟩) (card_erase ?_ h2 ⟨_, hx⟩) <;> omega
 
 /--
 例 3.6.11
@@ -390,5 +390,203 @@ noncomputable def SetTheory.Set.card (X : Set) : ℕ := if h : X.finite then h.c
 
 theorem SetTheory.Set.has_card_card {X : Set} (hX : X.finite) : X.has_card (SetTheory.Set.card X) := by
   simp [card, hX, hX.choose_spec]
+
+theorem SetTheory.Set.has_card_to_card {X : Set} {n : ℕ} : X.has_card n → X.card = n := by
+  intro h; simp [card, card_uniq (⟨n, h⟩ : X.finite).choose_spec h]; aesop
+
+theorem SetTheory.Set.card_to_has_card {X : Set} {n : ℕ} (hn : n ≠ 0) : X.card = n → X.has_card n := by
+  simp [card]; intro h
+  by_cases hX : X.finite <;> simp [hX] at h
+  · exact h ▸ hX.choose_spec
+  · simp [h] at hn
+
+theorem SetTheory.Set.card_fin_eq (n : ℕ) : (Fin n).has_card n := (has_card_iff _ _).mp ⟨id, Function.bijective_id⟩
+
+theorem SetTheory.Set.Fin_card (n : ℕ) : (Fin n).card = n := has_card_to_card (card_fin_eq n)
+
+theorem SetTheory.Set.Fin_finite (n : ℕ) : (Fin n).finite := ⟨n, card_fin_eq n⟩
+
+theorem SetTheory.Set.EquivCard_to_has_card_eq {X Y : Set} {n : ℕ} (h : X ≈ Y) : X.has_card n ↔ Y.has_card n := by
+  choose f hf using h; let e := Equiv.ofBijective f hf
+  constructor <;> (intro h'; rw [has_card_iff] at *; choose g hg using h')
+  · use e.symm.trans (.ofBijective _ hg); apply Equiv.bijective
+  · use e.trans (.ofBijective _ hg); apply Equiv.bijective
+
+theorem SetTheory.Set.EquivCard_to_card_eq {X Y : Set} (h : X ≈ Y) : X.card = Y.card := by
+  by_cases hX : X.finite <;> by_cases hY : Y.finite <;> try rw [finite] at hX hY
+  · choose nX hXn using hX; choose nY hYn using hY
+    simp [has_card_to_card hXn, has_card_to_card hYn, EquivCard_to_has_card_eq h] at *
+    solve_by_elim [card_uniq]
+  · choose nX hXn using hX; rw [EquivCard_to_has_card_eq h] at hXn; tauto
+  · choose nY hYn using hY; rw [← EquivCard_to_has_card_eq h] at hYn; tauto
+  simp [card, hX, hY]
+
+/--
+习题 3.6.2
+-/
+theorem SetTheory.Set.empty_iff_card_eq_zero {X : Set} : X = ∅ ↔ X.finite ∧ X.card = 0 := by
+  simp [← has_card_zero]
+  constructor
+  · intro h
+    exact ⟨⟨0, h⟩, has_card_to_card h⟩
+  · intro ⟨h1, h2⟩
+    exact h2 ▸ has_card_card h1
+
+lemma SetTheory.Set.empty_of_card_eq_zero {X : Set} (hX : X.finite) : X.card = 0 → X = ∅ := by
+  intro h
+  rw [empty_iff_card_eq_zero]
+  exact ⟨hX, h⟩
+
+lemma SetTheory.Set.finite_of_empty {X : Set} : X = ∅ → X.finite := by
+  intro h
+  rw [empty_iff_card_eq_zero] at h
+  exact h.1
+
+lemma SetTheory.Set.card_eq_zero_of_empty {X : Set} : X = ∅ → X.card = 0 := by
+  intro h
+  rw [empty_iff_card_eq_zero] at h
+  exact h.2
+
+@[simp]
+lemma SetTheory.Set.empty_finite : (∅ : Set).finite := finite_of_empty rfl
+
+@[simp]
+lemma SetTheory.Set.empty_card_eq_zero : (∅ : Set).card = 0 := card_eq_zero_of_empty rfl
+
+/--
+习题 3.6.4
+-/
+theorem SetTheory.Set.card_insert {X : Set} (hX : X.finite) {x : Object} (hx : x ∉ X) :
+    (X ∪ {x}).finite ∧ (X ∪ {x}).card = X.card + 1 := by
+  obtain ⟨n, hXn⟩ := hX
+  rw [has_card_iff] at hXn
+  obtain ⟨f, hf⟩ := hXn
+  let g := open Classical in fun i : (X ∪ {x} : Set) ↦
+    if h : i.val ∈ X then
+      Fin_embed n (n + 1) (by simp) (f ⟨i.val, h⟩)
+    else
+      Fin_mk (n + 1) n (by simp)
+  have g_bijective : Function.Bijective g := by
+    constructor
+    · intro x1 x2 h
+      by_cases hx1 : x1.val ∈ X <;>
+      by_cases hx2 : x2.val ∈ X <;>
+      simp [g, hx1, hx2] at h
+      · have := hf.1
+        grind
+      · grind
+      · have : n = (f ⟨x2, hx2⟩ : ℕ) := by
+          rw [← Object.natCast_inj _ _]
+          simp_all only [Fin.coe_toNat]
+        have := Fin.toNat_lt (f ⟨x2, hx2⟩)
+        omega
+      · aesop
+    · intro y
+      by_cases h : n = y
+      · use ⟨x, by aesop⟩
+        simpa [g, hx]
+      · obtain ⟨x, hx⟩ := hf.2 ⟨y, by rw [mem_Fin]; grind⟩
+        use ⟨x, by aesop⟩
+        simp_all only [g, x.property, Fin.coe_inj]
+  constructor
+  · use n + 1
+    rw [has_card_iff]
+    exact ⟨g, g_bijective⟩
+  · rw [has_card_to_card ((has_card_iff _ _).mpr ⟨f, hf⟩)]
+    apply has_card_to_card
+    rw [has_card_iff]
+    exact ⟨g, g_bijective⟩
+
+section helpers
+-- 一些有用的引理
+lemma SetTheory.Set.sdiff_union {X : Set} {x : Object} (hx : x ∈ X) : X \ {x} ∪ {x} = X := by
+  ext x'
+  refine ⟨by aesop, ?_⟩
+  intro hx; simp [mem_union, mem_sdiff]
+  by_cases hxy : x' = x
+  · right; assumption
+  · left; exact ⟨hx, hxy⟩
+end helpers
+
+theorem SetTheory.Set.card_union {X Y : Set} (hX : X.finite) (hY : Y.finite) :
+    (X ∪ Y).finite ∧ (X ∪ Y).card ≤ X.card + Y.card := by
+  obtain ⟨nY, _⟩ := hY
+  revert Y
+  induction' nY with nY h <;> intro Y hY
+  · rw [has_card_zero] at hY; simpa [hY]
+  · have : Y ≠ ∅ := by
+      by_contra!
+      have := card_uniq hY ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nY + 1, hY⟩)
+      linarith
+    obtain ⟨y, hy⟩ := nonempty_def this
+    have hCard := card_erase (by simp) hY ⟨y, hy⟩
+    obtain ⟨h1, h2⟩ := h hCard
+    by_cases hy' : y ∈ X
+    · have : X ∪ Y \ {y} = X ∪ Y := by
+        ext x
+        refine ⟨by aesop, ?_⟩
+        intro hx; rw [mem_union] at *
+        rcases hx with (hx | hx)
+        · left; assumption
+        · by_cases hxy : y = x
+          · rw [hxy] at hy'
+            left; assumption
+          · right; aesop
+      rw [← this]
+      constructor
+      · assumption
+      · trans X.card + (Y \ {y}).card
+        · assumption
+        · simp [has_card_to_card hCard, has_card_to_card hY]
+    · have : X ∪ Y \ {y} ∪ {y} = X ∪ Y := by
+        rw [union_assoc, sdiff_union hy]
+      rw [← this]
+      obtain ⟨_, _⟩ := card_insert h1 (x := y) (by simpa)
+      constructor
+      · assumption
+      · have := sdiff_union hy
+        have := card_insert ⟨nY, hCard⟩ (x := y) (by simp)
+        grind -- using this and h2
+
+theorem SetTheory.Set.card_union_disjoint {X Y : Set} (hX : X.finite) (hY : Y.finite)
+    (hdisj : Disjoint X Y) : (X ∪ Y).card = X.card + Y.card := by
+  obtain ⟨nY, _⟩ := hY
+  revert Y
+  induction' nY with nY h <;> intro Y hdisj hY
+  · rw [has_card_zero] at hY; simp [hY]
+  · by_cases hempty : X = ∅
+    · simp [hempty]
+    have : Y ≠ ∅ := by
+      by_contra!
+      have := card_uniq hY ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nY + 1, hY⟩)
+      linarith
+    obtain ⟨y, hy⟩ := nonempty_def this
+    have hCard := card_erase (by simp) hY ⟨y, hy⟩
+    have hdisj' : Disjoint X (Y \ {y}) := by
+      rw [disjoint_iff]
+      by_contra!
+      have : X ∩ Y ≠ ∅ := by
+        obtain ⟨x, hx⟩ := nonempty_def this
+        rw [mem_inter, mem_sdiff] at hx
+        apply nonempty_of_inhabited (x := x)
+        rw [mem_inter]; exact ⟨hx.1, hx.2.1⟩
+      rw [disjoint_iff] at hdisj
+      contradiction
+    rw [← sdiff_union hy, ← union_assoc]
+    have := card_insert ⟨nY, hCard⟩ (x := y) (by simp)
+    have : X.card ≠ 0 := by
+      by_contra!
+      have := empty_of_card_eq_zero hX this
+      contradiction
+    let card := X.card + (Y \ {y}).card
+    have := card_to_has_card (X := X ∪ Y \ {y}) (n := card) (by aesop) (h (hdisj') hCard)
+    have := card_insert ⟨card, this⟩ (x := y) (by
+      simp; by_contra!
+      have : y ∈ X ∩ Y := by aesop
+      have := nonempty_of_inhabited this
+      rw [disjoint_iff] at hdisj
+      contradiction
+    )
+    grind
 
 end Chapter3
