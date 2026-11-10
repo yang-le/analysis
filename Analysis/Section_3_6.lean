@@ -506,6 +506,31 @@ lemma SetTheory.Set.sdiff_union {X : Set} {x : Object} (hx : x ∈ X) : X \ {x} 
   by_cases hxy : x' = x
   · right; assumption
   · left; exact ⟨hx, hxy⟩
+
+lemma SetTheory.Set.sdiff_subset {X Y : Set} {x : Object} (hXY : X ⊆ Y) :
+    X \ {x} ⊆ Y \ {x} := by
+  intro x' hx'
+  simp_all [mem_sdiff]
+  apply hXY
+  exact hx'.1
+
+lemma SetTheory.Set.sdiff_ssubset {X Y : Set} {x : Object} (hX : x ∈ X) (hY : x ∈ Y) (hXY : X ⊂ Y) :
+    X \ {x} ⊂ Y \ {x} := by
+  constructor
+  · exact sdiff_subset hXY.1
+  · by_contra!
+    have : X = Y := by
+      ext x'
+      constructor <;> intro hx'
+      · exact hXY.1 _ hx'
+      by_cases h : x = x'
+      · simpa [← h]
+      · have : x' ∈ X \ {x} := by aesop
+        simp at this
+        exact this.1
+    have := hXY.2
+    contradiction
+
 end helpers
 
 theorem SetTheory.Set.card_union {X Y : Set} (hX : X.finite) (hY : Y.finite) :
@@ -588,5 +613,160 @@ theorem SetTheory.Set.card_union_disjoint {X Y : Set} (hX : X.finite) (hY : Y.fi
       contradiction
     )
     grind
+
+theorem SetTheory.Set.card_subset {X Y : Set} (hX : X.finite) (hY : Y ⊆ X) :
+    Y.finite ∧ Y.card ≤ X.card := by
+  obtain ⟨nX, _⟩ := hX
+  revert X Y
+  induction' nX with nX h <;> intro X Y hY hnX
+  · have := empty_of_card_eq_zero ⟨0, hnX⟩ (has_card_to_card hnX)
+    have : Y = ∅ := by
+      by_contra!
+      obtain ⟨y, hy⟩ := nonempty_def this
+      have := hY _ hy
+      aesop
+    constructor <;> simp [this]
+  · have : X ≠ ∅ := by
+      by_contra!
+      have := card_uniq hnX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hnX⟩)
+      linarith
+    obtain ⟨x, hx⟩ := nonempty_def this
+    by_cases hxY : x ∈ Y
+    · have hX'card := card_erase (by simp) hnX ⟨x, hx⟩
+      have := h (sdiff_subset hY) hX'card
+      rw [← sdiff_union hx, ← sdiff_union hxY]
+      have hY' := card_insert this.1 (x := x) (by aesop)
+      have hX' := card_insert ⟨nX, hX'card⟩ (x := x) (by aesop)
+      constructor
+      · exact hY'.1
+      · rw [hY'.2, hX'.2]
+        simp_all
+    · have hX'card := card_erase (by simp) hnX ⟨x, hx⟩
+      have := card_insert ⟨nX, hX'card⟩ (x := x) (by aesop)
+      have := h (show Y ⊆ X \ {x} by intro x' hx'; aesop) hX'card
+      rw [← sdiff_union hx]
+      constructor
+      · exact this.1
+      · trans (X \ {x}).card
+        · exact this.2
+        · simp_all
+
+theorem SetTheory.Set.card_ssubset' {X Y : Set} (hX : X.finite) (hY : Y ⊂ X) :
+    Y.finite ∧ Y.card < X.card := by
+  obtain ⟨nX, _⟩ := hX
+  revert X Y
+  induction' nX with nX h <;> intro X Y hY hnX
+  · rw [ssubset_def, empty_of_card_eq_zero ⟨0, hnX⟩ (has_card_to_card hnX)] at hY
+    have : Y = ∅ := by
+      by_contra!
+      obtain ⟨y, hy⟩ := nonempty_def this
+      have := hY.1 _ hy
+      aesop
+    have := hY.2
+    contradiction
+  · have : X ≠ ∅ := by
+      by_contra!
+      have := card_uniq hnX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hnX⟩)
+      linarith
+    obtain ⟨x, hx⟩ := nonempty_def this
+    rw [ssubset_def] at hY
+    by_cases hxY : x ∈ Y
+    · have hX'card := card_erase (by simp) hnX ⟨x, hx⟩
+      have := h (sdiff_ssubset hxY hx hY) hX'card
+      rw [← sdiff_union hx, ← sdiff_union hxY]
+      have hY' := card_insert this.1 (x := x) (by aesop)
+      have hX' := card_insert ⟨nX, hX'card⟩ (x := x) (by aesop)
+      constructor
+      · exact hY'.1
+      · rw [hX'.2, hY'.2]
+        simp_all
+    · by_cases hYempty : Y = ∅
+      · rw [card_eq_zero_of_empty, has_card_to_card hnX]
+        simp [hYempty]; assumption
+      · obtain ⟨y, hy⟩ := nonempty_def hYempty
+        have hyX := hY.1 _ hy
+        have hX'card := card_erase (by simp) hnX ⟨y, hyX⟩
+        have := h (sdiff_ssubset hy hyX hY) hX'card
+        rw [← sdiff_union hy, ← sdiff_union hyX]
+        have hY' := card_insert this.1 (x := y) (by aesop)
+        have hX' := card_insert ⟨nX, hX'card⟩ (x := y) (by aesop)
+        constructor
+        · exact hY'.1
+        · rw [hX'.2, hY'.2]
+          simp_all
+
+theorem SetTheory.Set.card_ssubset {X Y : Set} (hX : X.finite) (hY : Y ⊂ X) :
+    Y.card < X.card := (card_ssubset' hX hY).2
+
+theorem SetTheory.Set.card_image {X Y : Set} (hX : X.finite) (f : X → Y) :
+    (image f X).finite ∧ (image f X).card ≤ X.card := by
+  obtain ⟨nX, _⟩ := hX
+  revert X
+  induction' nX with nX h <;> intro X f hX
+  · have : (image f X) = ∅ := by
+      by_contra!
+      obtain ⟨y, hy⟩ := nonempty_def this
+      simp at hy
+      obtain ⟨x, ⟨h1, _⟩⟩ := hy
+      have := empty_of_card_eq_zero ⟨0, hX⟩ (has_card_to_card hX)
+      have := this ▸ not_mem_empty x
+      contradiction
+    constructor <;> simp [this]
+  · have : X ≠ ∅ := by
+      by_contra!
+      have := card_uniq hX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hX⟩)
+      linarith
+    obtain ⟨x, hx⟩ := nonempty_def this
+    let X' := X \ {x}
+    have h1 := h (X := X') (fun x ↦ f ⟨x.val, by aesop⟩) (card_erase (by simp) hX ⟨x, hx⟩)
+    have h2 : image (X := X') (fun x ↦ f ⟨x.val, by aesop⟩) X' = image f X' := by
+      ext x
+      refine ⟨?_, by aesop⟩
+      intro hx
+      simp_all
+      obtain ⟨a, ⟨h1, h2⟩⟩ := hx
+      use a, (by grind only)
+    rw [h2] at h1
+    nth_rw 2 4 5 [← sdiff_union hx]
+    rw [image_of_union]
+    have singleton_card : (image f {x}).has_card 1 := by
+      rw [has_card_iff]
+      use fun _ ↦ Fin_mk 1 0 (by simp)
+      constructor
+      · intro x1 x2 _
+        have := x1.property
+        simp at this
+        obtain ⟨_, h1⟩ := this
+        have := x2.property
+        simp at this
+        obtain ⟨_, h2⟩ := this
+        rw [h1] at h2
+        ext; assumption
+      · intro y
+        use ⟨f ⟨x, hx⟩, by aesop⟩
+        simp
+        have := Fin.toNat_lt y
+        grind only
+    have := card_union h1.1 ⟨1, singleton_card⟩
+    constructor
+    · exact this.1
+    · trans (image f X').card + (image f {x}).card
+      · exact this.2
+      · have : ({x} : Set).has_card 1 := by
+          rw [has_card_iff]
+          use fun _ ↦ Fin_mk 1 0 (by simp)
+          constructor
+          · intro x1 x2 _
+            have h1 := x1.property
+            have h2 := x2.property
+            simp at h1 h2
+            ext; simp [h1, h2]
+          · intro y
+            use ⟨x, by simp⟩
+            simp
+            have := Fin.toNat_lt y
+            grind only
+        rw [has_card_to_card singleton_card, card_union_disjoint ⟨nX, card_erase (by simp) hX ⟨x, hx⟩⟩ ⟨1, this⟩ (by rw [disjoint_iff]; aesop), has_card_to_card this]
+        grind only
 
 end Chapter3
