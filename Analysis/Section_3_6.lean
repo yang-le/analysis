@@ -960,4 +960,132 @@ theorem SetTheory.Set.card_pow {X Y : Set} (hY : Y.finite) (hX : X.finite) :
       rw [has_card_to_card ⟨f', f'Bijective⟩, ← has_card_to_card ⟨g, hg⟩, ← has_card_to_card ⟨fy, hfy⟩, card_union_disjoint ⟨nX, (card_erase (by simp) hX ⟨x, hx⟩)⟩ ⟨1, singleton_card⟩ (by rw [disjoint_iff]; aesop), has_card_to_card singleton_card]
       grind
 
+/--
+习题 3.6.5
+-/
+theorem SetTheory.Set.prod_EqualCard_prod (A B : Set) :
+    EqualCard (A ×ˢ B) (B ×ˢ A) := by
+  let f := prod_commutator A B
+  exact ⟨f, f.bijective⟩
+
+noncomputable abbrev SetTheory.Set.pow_fun_equiv' (A B : Set) : ↑(A ^ B) ≃ (B → A) :=
+  pow_fun_equiv (A := A) (B := B)
+
+/--
+习题 3.6.6
+-/
+noncomputable abbrev SetTheory.Set.e_3_6_6_1 {A B C : Set} : (C → (A ^ B : Set)) ≃ (C → B → A) where
+  toFun f c := (SetTheory.Set.pow_fun_equiv' A B).toFun (f c)
+  invFun f c := (SetTheory.Set.pow_fun_equiv' A B).invFun (f c)
+  left_inv _ := by simp
+  right_inv _ := by simp
+
+noncomputable abbrev SetTheory.Set.e_3_6_6_2 {A B C : Set} : (C ×ˢ B → A) ≃ (B ×ˢ C → A) where
+  toFun f b := f ((prod_commutator B C).toFun b)
+  invFun f c := f ((prod_commutator B C).invFun c)
+  left_inv _ := by simp
+  right_inv _ := by simp
+
+theorem SetTheory.Set.pow_pow_EqualCard_pow_prod (A B C : Set) :
+    EqualCard ((A ^ B) ^ C) (A ^ (B ×ˢ C)) := by
+  let f : ((A ^ B) ^ C : Set) ≃ (A ^ (B ×ˢ C) : Set) :=
+    calc ((A ^ B) ^ C : Set)
+      ≃ (C → (A ^ B : Set)) := pow_fun_equiv' (A ^ B) C
+    _ ≃ (C → B → A) := e_3_6_6_1
+    _ ≃ (C ×ˢ B → A) := curry_equiv
+    _ ≃ (B ×ˢ C → A) := e_3_6_6_2
+    _ ≃ (A ^ (B ×ˢ C) : Set) := (pow_fun_equiv' A (B ×ˢ C)).symm
+  exact ⟨f, f.bijective⟩
+
+theorem SetTheory.Set.pow_pow_eq_pow_mul (a b c : ℕ) : (a ^ b) ^ c = a ^ (b * c) := by
+  let A := Fin a
+  let B := Fin b
+  let C := Fin c
+  have h1 : ((A ^ B) ^ C : Set).has_card ((a ^ b) ^ c : ℕ) := by
+    have hab := card_pow (Fin_finite a) (Fin_finite b)
+    have habc := card_pow hab.1 (Fin_finite c)
+    have := has_card_card habc.1
+    rwa [habc.2, hab.2, Fin_card a, Fin_card b, Fin_card c] at this
+  have h2 : (A ^ (B ×ˢ C)).has_card (a ^ (b * c)) := by
+    have hbc := card_prod (Fin_finite b) (Fin_finite c)
+    have habc := card_pow (Fin_finite a) hbc.1
+    have := has_card_card habc.1
+    rwa [habc.2, hbc.2, Fin_card a, Fin_card b, Fin_card c] at this
+  have h1' := (pow_pow_EqualCard_pow_prod A B C).trans ((has_card_iff _ _).mp h2)
+  exact card_uniq h1 h1'
+
+noncomputable abbrev SetTheory.Set.e_3_6_6_3 (A B C : Set) (hd : Disjoint B C) : ((A ^ B) ×ˢ (A ^ C)) ≃ (A ^ (B ∪ C) : Set) where
+  toFun p := by
+    let f1 := pow_fun_equiv (fst p)
+    let f2 := pow_fun_equiv (snd p)
+    open Classical in let g (x : (B ∪ C : Set)) : A := if h : x.val ∈ B then f1 ⟨x, h⟩ else f2 ⟨x, by aesop⟩
+    exact pow_fun_equiv.symm g
+  invFun g := by
+    let g' := pow_fun_equiv g
+    let f1 (x : B) : A := g' ⟨x, by aesop⟩
+    let f2 (x : C) : A := g' ⟨x, by aesop⟩
+    exact mk_cartesian (pow_fun_equiv.symm f1) (pow_fun_equiv.symm f2)
+  left_inv x := by
+    simp
+    nth_rw 10 [← mk_cartesian_fst_snd_eq x]
+    congr <;> simp [pow_fun_equiv]
+    · generalize_proofs h1 h2 h3 h4
+      have : (open Classical in fun x' : B ↦ if h : x'.val ∈ B then h2.choose x' else h3.choose ⟨x', h4 x' h⟩) = h2.choose := by
+        ext i; simp [i.property]
+      simp [this, h2.choose_spec]
+    · generalize_proofs h1 h2 h3 h4
+      have : (open Classical in fun x' : C ↦ if h : x'.val ∈ B then h2.choose ⟨x', h⟩ else h3.choose x') = h3.choose := by
+        ext i
+        have : ¬i.val ∈ B := by
+          by_contra
+          rw [disjoint_iff] at hd
+          have : i.val ∈ (∅ : Set) := by
+            rw [← hd]; simp [i.property, this]
+          have := not_mem_empty i.val
+          contradiction
+        simp [this]
+      simp [this, h3.choose_spec]
+  right_inv _ := by simp
+
+theorem SetTheory.Set.pow_prod_pow_EqualCard_pow_union (A B C : Set) (hd : Disjoint B C) :
+    EqualCard ((A ^ B) ×ˢ (A ^ C)) (A ^ (B ∪ C)) := by
+  let f := e_3_6_6_3 A B C hd
+  exact ⟨f, f.bijective⟩
+
+theorem SetTheory.Set.pow_mul_pow_eq_pow_add (a b c : ℕ) : (a ^ b) * a ^ c = a ^ (b + c) := by
+  let A := Fin a
+  let B := Fin b
+  let C := Fin c
+  let C' := C.replace (P := fun c c' ↦ ∃ n : ℕ, n = c' ∧ n = (c : ℕ) + b) (by simp)
+  have hC'ard : C'.has_card c := by
+    let f (c' : C') : Fin c := by
+      have := c'.property
+      rw [replacement_axiom] at this
+      exact this.choose
+    use f
+    constructor
+    · intro x1 x2 h
+      simp at h; grind
+    · intro y
+      use ⟨(y : ℕ) + b, by rw [replacement_axiom]; use y, y + b⟩
+      simp [f]; grind
+  have hdisj : Disjoint B C' := by
+    rw [disjoint_iff]
+    by_contra! h
+    have := nonempty_def h
+    aesop
+  have h1 : ((A ^ B) ×ˢ (A ^ C')).has_card ((a ^ b) * a ^ c) := by
+    have hab := card_pow (Fin_finite a) (Fin_finite b)
+    have hac := card_pow (Fin_finite a) ⟨c, hC'ard⟩
+    have habac := card_prod hab.1 hac.1
+    have := has_card_card habac.1
+    rwa [habac.2, hab.2, hac.2, Fin_card a, Fin_card b, has_card_to_card hC'ard] at this
+  have h2 : (A ^ (B ∪ C')).has_card (a ^ (b + c)) := by
+    have hbc := card_union_disjoint (Fin_finite b) ⟨c, hC'ard⟩ hdisj
+    have habc := card_pow (Fin_finite a) (card_union (Fin_finite b) ⟨c, hC'ard⟩).1
+    have := has_card_card habc.1
+    rwa [habc.2, hbc, Fin_card a, Fin_card b, has_card_to_card hC'ard] at this
+  have h1' := (pow_prod_pow_EqualCard_pow_union A B C' hdisj).trans ((has_card_iff _ _).mp h2)
+  exact card_uniq h1 h1'
+
 end Chapter3
