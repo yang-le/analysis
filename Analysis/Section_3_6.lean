@@ -807,4 +807,157 @@ theorem SetTheory.Set.card_image_inj {X Y : Set} (hX : X.finite) {f : X → Y}
     rw [this, card_union_disjoint ⟨nX, card_erase (by simp) hX ⟨x, hx⟩⟩ ⟨1, singleton_card⟩ (by rw [disjoint_iff]; aesop), has_card_to_card singleton_card, has_card_to_card (image_singleton_card f hx)]
     simp [h1, X']
 
+theorem SetTheory.Set.card_prod {X Y : Set} (hX : X.finite) (hY : Y.finite) :
+    (X ×ˢ Y).finite ∧ (X ×ˢ Y).card = X.card * Y.card := by
+  obtain ⟨nX, ⟨f, hf⟩⟩ := hX
+  obtain ⟨nY, ⟨g, hg⟩⟩ := hY
+  let h' (z : X ×ˢ Y) : Fin (nX * nY) := Fin_mk (nX * nY) (f (fst z) * nY + g (snd z)) (by
+    calc f (fst z) * nY + g (snd z)
+      < f (fst z) * nY + nY := add_lt_add_right (Fin.toNat_lt _) _
+    _ = (f (fst z) + 1) * nY := by nth_rw 2 [← one_mul nY]; rw [← add_mul]
+    _ ≤ nX * nY := mul_le_mul_left (Fin.toNat_lt _) nY
+  )
+  have h'Bijective : Function.Bijective h' := by
+    constructor
+    · intro x1 x2 h
+      simp at h
+      by_cases hnY : nY = 0
+      · subst hnY
+        have := x1.property
+        simp [empty_of_card_eq_zero ⟨0, ⟨g, hg⟩⟩ (has_card_to_card ⟨g, hg⟩)] at this
+      · let m := g (snd x1) + nY * f (fst x1)
+        have hm : g (snd x2) + nY * f (fst x2) = m := by rw [add_comm, mul_comm, ← h, add_comm, mul_comm]
+        have h1 := (Nat.div_mod_unique (by omega)).mpr ⟨hm, Fin.toNat_lt _⟩
+        have h2 := (Nat.div_mod_unique (by omega)).mpr ⟨show g (snd x1) + nY * f (fst x1) = m by rfl, Fin.toNat_lt _⟩
+        have h1' := hf.1 (show f (fst x1) = f (fst x2) by simp [← h1.1, ← h2.1])
+        have h2' := hg.1 (show g (snd x1) = g (snd x2) by simp [← h1.2, ← h2.2])
+        grind
+    · intro y
+      have hy := Fin.toNat_lt y
+      by_cases hnY : nY = 0
+      · subst hnY
+        linarith
+      · let x' := (Equiv.ofBijective f hf).invFun (Fin_mk nX (y / nY) (by rwa [← Nat.div_lt_div_right hnY (by simp), Nat.mul_div_cancel nX (by omega)] at hy))
+        let y' := (Equiv.ofBijective g hg).invFun (Fin_mk nY (y % nY) (Nat.mod_lt y (show 0 < nY by omega)))
+        use mk_cartesian x' y'; simp
+        change (Equiv.ofBijective f hf).toFun ((Equiv.ofBijective f hf).invFun _) * nY + (Equiv.ofBijective g hg).toFun ((Equiv.ofBijective g hg).invFun _) = y
+        rw [(Equiv.ofBijective f hf).right_inv, (Equiv.ofBijective g hg).right_inv]; simp
+        rw [mul_comm]; apply Nat.div_add_mod
+  constructor
+  · use nX * nY, h'
+  · rw [has_card_to_card ⟨f, hf⟩, has_card_to_card ⟨g, hg⟩, has_card_to_card ⟨h', h'Bijective⟩]
+
+noncomputable def SetTheory.Set.pow_fun_equiv {A B : Set} : ↑(A ^ B) ≃ (B → A) where
+  toFun x := ((powerset_axiom x).mp x.property).choose
+  invFun f := ⟨f, (powerset_axiom f).mpr ⟨f, by rfl⟩⟩
+  left_inv x := by simp [((powerset_axiom x).mp x.property).choose_spec]
+  right_inv f := by simp
+
+lemma SetTheory.Set.pow_fun_eq_iff {A B : Set} (x y : ↑(A ^ B)) : x = y ↔ pow_fun_equiv x = pow_fun_equiv y := by
+  rw [← pow_fun_equiv.apply_eq_iff_eq]
+
+theorem SetTheory.Set.card_pow {X Y : Set} (hY : Y.finite) (hX : X.finite) :
+    (Y ^ X).finite ∧ (Y ^ X).card = Y.card ^ X.card := by
+  obtain ⟨nX, _⟩ := hX
+  obtain ⟨nY, ⟨fy, hfy⟩⟩ := hY
+  revert X
+  induction' nX with nX h <;> intro X hX
+  · simp [empty_of_card_eq_zero ⟨0, hX⟩ (has_card_to_card hX)]
+    have : (Y ^ (∅ : Set)).has_card 1 := by
+      rw [has_card_iff]
+      use fun _ ↦ Fin_mk 1 0 (by simp)
+      constructor
+      · intro _ _ _
+        rw [pow_fun_eq_iff]
+        ext x
+        have := x.property
+        have := not_mem_empty x
+        contradiction
+      · intro y
+        let f (x : (∅ : Set)) : Y := by
+          have := x.property
+          have := not_mem_empty x
+          contradiction
+        use pow_fun_equiv.invFun f
+        grind [Fin.toNat_lt y]
+    exact ⟨⟨1, this⟩, has_card_to_card this⟩
+  · have : X ≠ ∅ := by
+      by_contra!
+      have := card_uniq hX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hX⟩)
+      linarith
+    obtain ⟨x, hx⟩ := nonempty_def this
+    let X' := X \ {x}
+    have := h (card_erase (by simp) hX ⟨x, hx⟩)
+    obtain ⟨n', ⟨g, hg⟩⟩ := this.1
+    let f' (x' : ↑(Y ^ X)) : Fin (n' * nY) := by
+      let x'' (i : X') : Y := pow_fun_equiv x' ⟨i, ((mem_sdiff _ _ _).mp i.property).1⟩
+      let j := fy (pow_fun_equiv x' ⟨x, hx⟩)
+      let base := g (pow_fun_equiv.symm x'')
+      exact ⟨base * nY + (j : ℕ), by
+        rw [mem_Fin]
+        use base * nY + j; simp
+        calc base * nY + j
+          < base * nY + nY := add_lt_add_right (Fin.toNat_lt _) _
+        _ = (base + 1) * nY := by nth_rw 2 [← one_mul nY]; rw [← add_mul]
+        _ ≤ n' * nY := mul_le_mul_left (Fin.toNat_lt _) nY
+      ⟩
+    have f'Bijective : Function.Bijective f' := by
+      constructor
+      · intro x1 x2 h
+        simp [f', pow_fun_equiv] at h
+        generalize_proofs h1 h2 h3 h4 h5 at h
+        by_cases hnY : nY = 0
+        subst hnY
+        · have := x1.property
+          simp [empty_of_card_eq_zero ⟨0, ⟨fy, hfy⟩⟩ (has_card_to_card ⟨fy, hfy⟩)] at this
+          obtain ⟨f, _⟩ := this
+          have := (f ⟨x, hx⟩).property
+          have := not_mem_empty (f ⟨x, hx⟩)
+          contradiction
+        · let m := fy (h1.choose ⟨x, hx⟩) + nY * g ⟨fun i : X' ↦ h1.choose ⟨i, h2 i⟩, h3⟩
+          have hm : fy (h4.choose ⟨x, hx⟩) + nY * g ⟨fun i : X' ↦ h4.choose ⟨i, h2 i⟩, h5⟩ = m := by rw [add_comm, mul_comm, ← h, add_comm, mul_comm]
+          have h1' := (Nat.div_mod_unique (by omega)).mpr ⟨hm, Fin.toNat_lt _⟩
+          have h2' := (Nat.div_mod_unique (by omega)).mpr ⟨show fy (h1.choose ⟨x, hx⟩) + nY * g ⟨fun i : X' ↦ h1.choose ⟨i, h2 i⟩, h3⟩ = m by rfl, Fin.toNat_lt _⟩
+          have h1'' := hg.1 (show g ⟨fun i : X' ↦ h4.choose ⟨i, h2 i⟩, h5⟩ = g ⟨fun i : X' ↦ h1.choose ⟨i, h2 i⟩, h3⟩ by simp [← h1'.1, ← h2'.1])
+          have h2'' := hfy.1 (show fy (h4.choose ⟨x, hx⟩) = fy (h1.choose ⟨x, hx⟩) by simp [← h1'.2, ← h2'.2])
+          have : h1.choose = h4.choose := by
+            ext i
+            by_cases hi : i = x
+            · subst hi
+              rw [h2''.symm]
+            · have : i.val ∈ X' := by
+                rw [mem_sdiff]; simp
+                exact ⟨i.property, hi⟩
+              have : h1.choose ⟨i, h2 ⟨i, this⟩⟩ = h4.choose ⟨i, h2 ⟨i, this⟩⟩ := by
+                change (fun i : X' ↦ h1.choose ⟨i, h2 i⟩) ⟨i, this⟩ = (fun i : X' ↦ h4.choose ⟨i, h2 i⟩) ⟨i, this⟩
+                rw [show (fun i : X' ↦ h1.choose ⟨i, h2 i⟩) = fun i : X' ↦ h4.choose ⟨i, h2 i⟩ by simp_all]
+              simp only [this]
+          ext; rw [← h1.choose_spec, ← h4.choose_spec]; simpa
+      · intro y
+        have hy := Fin.toNat_lt y
+        by_cases hnY : nY = 0
+        · subst hnY
+          linarith
+        · let j := (Equiv.ofBijective fy hfy).invFun (Fin_mk nY (y % nY) (Nat.mod_lt y (show 0 < nY by omega)))
+          let base := (Equiv.ofBijective g hg).invFun (Fin_mk n' (y / nY) (by rwa [← Nat.div_lt_div_right hnY (by simp), Nat.mul_div_cancel n' (by omega)] at hy))
+          open Classical in
+          let f (i : X) := if h : i.val = x then j else (pow_fun_equiv base ⟨i, by simp; exact ⟨i.property, h⟩⟩)
+          use pow_fun_equiv.symm f
+          simp [f, f']
+          congr; symm; rw [Fin.coe_eq_iff]
+          have : (fun i : X' ↦ if i = x then j else pow_fun_equiv base i) = fun i : X' ↦ pow_fun_equiv base i := by
+            ext i; simp [show ¬i.val = x by aesop]
+          simp [this]
+          change y = (g (pow_fun_equiv.invFun (pow_fun_equiv.toFun base)) : ℕ) * nY + fy j
+          rw [pow_fun_equiv.left_inv]; simp [base, j]
+          generalize_proofs h1 h2
+          change y = ((Equiv.ofBijective g hg).toFun ((Equiv.ofBijective g hg).invFun (Fin_mk n' (y / nY) h1)) : ℕ) * nY + (Equiv.ofBijective fy hfy).toFun ((Equiv.ofBijective fy hfy).invFun (Fin_mk nY (y % nY) h2))
+          rw [(Equiv.ofBijective g hg).right_inv, (Equiv.ofBijective fy hfy).right_inv]; simp
+          symm; rw [mul_comm]; apply Nat.div_add_mod
+    constructor
+    · use n' * nY, f'
+    · nth_rw 2 [← sdiff_union hx]
+      rw [has_card_to_card ⟨f', f'Bijective⟩, ← has_card_to_card ⟨g, hg⟩, ← has_card_to_card ⟨fy, hfy⟩, card_union_disjoint ⟨nX, (card_erase (by simp) hX ⟨x, hx⟩)⟩ ⟨1, singleton_card⟩ (by rw [disjoint_iff]; aesop), has_card_to_card singleton_card]
+      grind
+
 end Chapter3
