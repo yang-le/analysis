@@ -175,7 +175,7 @@ theorem SetTheory.Set.Example_3_6_7b {a b c d : Object} (hab : a ≠ b) (hac : a
 假设$`n ≥ 1`，且$`X`的基数为$`n`. 那么$`X`是非空的。
 -/
 theorem SetTheory.Set.pos_card_nonempty {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_card n) : X ≠ ∅ := by
-  by_contra! h
+  by_contra h
   rw [has_card_iff] at hX
   choose f hf using hX
   have := ((Equiv.ofBijective f hf).symm ⟨0, by rw [mem_Fin]; use 0, (by omega); rfl⟩).property
@@ -218,7 +218,7 @@ theorem SetTheory.Set.card_erase {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_c
   set g : X' → Fin (n - 1) := fun x' ↦
     let := Fin.toNat_lt (f (ι x'))
     let : (f (ι x') : ℕ) ≠ m0 := by
-      by_contra!; simp [← this, Subtype.val_inj, hf.1.eq_iff, ι] at hm0f
+      by_contra; simp [← this, Subtype.val_inj, hf.1.eq_iff, ι] at hm0f
       have := x'.property; aesop
     if h' : f (ι x') < m0 then Fin_mk _ (f (ι x')) (by omega)
     else Fin_mk _ (f (ι x') - 1) (by omega)
@@ -236,7 +236,7 @@ theorem SetTheory.Set.card_erase {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_c
       generalize_proofs hx1 hx2 at hg2 <;>
       simp at hm0f <;>
       (have : f ⟨x1, hx1⟩ ≠ f x := by
-        by_contra!
+        by_contra
         have := hf.1 this
         have := x1.property
         rw [mem_sdiff] at this
@@ -245,7 +245,7 @@ theorem SetTheory.Set.card_erase {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_c
         have : ⟨x1, hx1⟩ ≠ x := by grind
         contradiction) <;>
       have : f ⟨x2, hx2⟩ ≠ f x := by
-        by_contra!
+        by_contra
         have := hf.1 this
         have := x2.property
         rw [mem_sdiff] at this
@@ -274,7 +274,7 @@ theorem SetTheory.Set.card_erase {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_c
           rw [mem_sdiff]
           constructor
           · exact a.property
-          · by_contra! h
+          · by_contra h
             simp at hm0f; aesop
         ⟩
         simp [g, ι, ← ha, h]
@@ -287,7 +287,7 @@ theorem SetTheory.Set.card_erase {n : ℕ} (h : n ≥ 1) {X : Set} (hX : X.has_c
           rw [mem_sdiff]
           constructor
           · exact a.property
-          · by_contra! h
+          · by_contra h
             simp at hm0f
             rw [mem_singleton] at h
             rw [show a = x by grind, hm0f] at ha
@@ -309,7 +309,7 @@ theorem SetTheory.Set.card_uniq {X : Set} {n m : ℕ} (h1 : X.has_card n) (h2 : 
   intro X m h1 h2
   have : X ≠ ∅ := pos_card_nonempty (by omega) h1
   choose x hx using nonempty_def this
-  have : m ≠ 0 := by contrapose! this; simpa [has_card_zero, this] using h2
+  have : m ≠ 0 := by contrapose this; simpa [has_card_zero, this] using h2
   specialize hn (card_erase ?_ h1 ⟨_, hx⟩) (card_erase ?_ h2 ⟨_, hx⟩) <;> omega
 
 /--
@@ -413,7 +413,7 @@ theorem SetTheory.Set.EquivCard_to_has_card_eq {X Y : Set} {n : ℕ} (h : X ≈ 
   · use e.trans (.ofBijective _ hg); apply Equiv.bijective
 
 theorem SetTheory.Set.EquivCard_to_card_eq {X Y : Set} (h : X ≈ Y) : X.card = Y.card := by
-  by_cases hX : X.finite <;> by_cases hY : Y.finite <;> try rw [finite] at hX hY
+  by_cases hX : X.finite <;> by_cases hY : Y.finite <;> rw [finite] at hX hY
   · choose nX hXn using hX; choose nY hYn using hY
     simp [has_card_to_card hXn, has_card_to_card hYn, EquivCard_to_has_card_eq h] at *
     solve_by_elim [card_uniq]
@@ -518,7 +518,7 @@ lemma SetTheory.Set.sdiff_ssubset {X Y : Set} {x : Object} (hX : x ∈ X) (hY : 
     X \ {x} ⊂ Y \ {x} := by
   constructor
   · exact sdiff_subset hXY.1
-  · by_contra!
+  · by_contra
     have : X = Y := by
       ext x'
       constructor <;> intro hx'
@@ -584,7 +584,7 @@ theorem SetTheory.Set.card_union {X Y : Set} (hX : X.finite) (hY : Y.finite) :
   induction' nY with nY h <;> intro Y hY
   · rw [has_card_zero] at hY; simpa [hY]
   · have : Y ≠ ∅ := by
-      by_contra!
+      by_contra
       have := card_uniq hY ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nY + 1, hY⟩)
       linarith
     obtain ⟨y, hy⟩ := nonempty_def this
@@ -626,7 +626,7 @@ theorem SetTheory.Set.card_union_disjoint {X Y : Set} (hX : X.finite) (hY : Y.fi
   · by_cases hempty : X = ∅
     · simp [hempty]
     have : Y ≠ ∅ := by
-      by_contra!
+      by_contra
       have := card_uniq hY ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nY + 1, hY⟩)
       linarith
     obtain ⟨y, hy⟩ := nonempty_def this
@@ -644,13 +644,13 @@ theorem SetTheory.Set.card_union_disjoint {X Y : Set} (hX : X.finite) (hY : Y.fi
     rw [← sdiff_union hy, ← union_assoc]
     have := card_insert ⟨nY, hCard⟩ (x := y) (by simp)
     have : X.card ≠ 0 := by
-      by_contra!
+      by_contra
       have := empty_of_card_eq_zero hX this
       contradiction
     let card := X.card + (Y \ {y}).card
     have := card_to_has_card (X := X ∪ Y \ {y}) (n := card) (by aesop) (h (hdisj') hCard)
     have := card_insert ⟨card, this⟩ (x := y) (by
-      simp; by_contra!
+      simp; by_contra
       have : y ∈ X ∩ Y := by aesop
       have := nonempty_of_inhabited this
       rw [disjoint_iff] at hdisj
@@ -671,7 +671,7 @@ theorem SetTheory.Set.card_subset {X Y : Set} (hX : X.finite) (hY : Y ⊆ X) :
       aesop
     constructor <;> simp [this]
   · have : X ≠ ∅ := by
-      by_contra!
+      by_contra
       have := card_uniq hnX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hnX⟩)
       linarith
     obtain ⟨x, hx⟩ := nonempty_def this
@@ -709,7 +709,7 @@ theorem SetTheory.Set.card_ssubset {X Y : Set} (hX : X.finite) (hY : Y ⊂ X) :
     have := hY.2
     contradiction
   · have : X ≠ ∅ := by
-      by_contra!
+      by_contra
       have := card_uniq hnX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hnX⟩)
       linarith
     obtain ⟨x, hx⟩ := nonempty_def this
@@ -742,7 +742,7 @@ theorem SetTheory.Set.card_image {X Y : Set} (hX : X.finite) (f : X → Y) :
   induction' nX with nX h <;> intro X f hX
   · constructor <;> simp [image_of_empty f hX]
   · have : X ≠ ∅ := by
-      by_contra!
+      by_contra
       have := card_uniq hX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hX⟩)
       linarith
     obtain ⟨x, hx⟩ := nonempty_def this
@@ -773,7 +773,7 @@ theorem SetTheory.Set.card_image_inj {X Y : Set} (hX : X.finite) {f : X → Y}
   induction' nX with nX h <;> intro X f hf hX
   · simp [image_of_empty f hX, has_card_to_card hX]
   · have : X ≠ ∅ := by
-      by_contra!
+      by_contra
       have := card_uniq hX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hX⟩)
       linarith
     obtain ⟨x, hx⟩ := nonempty_def this
@@ -882,7 +882,7 @@ theorem SetTheory.Set.card_pow {X Y : Set} (hY : Y.finite) (hX : X.finite) :
         grind [Fin.toNat_lt y]
     exact ⟨⟨1, this⟩, has_card_to_card this⟩
   · have : X ≠ ∅ := by
-      by_contra!
+      by_contra
       have := card_uniq hX ((card_eq_zero_of_empty this) ▸ has_card_card ⟨nX + 1, hX⟩)
       linarith
     obtain ⟨x, hx⟩ := nonempty_def this

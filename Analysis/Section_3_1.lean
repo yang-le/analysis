@@ -152,7 +152,7 @@ lemma SetTheory.Set.nonempty_def {X : Set} (h : X ≠ ∅) : ∃ x, x ∈ X := b
   contradiction
 
 theorem SetTheory.Set.nonempty_of_inhabited {X : Set} {x : Object} (h : x ∈ X) : X ≠ ∅ := by
-  contrapose! h
+  contrapose h
   rw [eq_empty_iff_forall_notMem] at h
   exact h x
 
@@ -808,7 +808,7 @@ example : ({1, 2} : Set) ∩ {3, 4} = ∅ := by aesop
 example : ¬ Disjoint ({1, 2, 3} : Set) {2, 3, 4} := by
   rw [disjoint_iff]
   intro h
-  change {1, 2, 3} ∩ {2, 3, 4} = ∅ at h
+  change {1, 2, 3} ∩ {2, 3, 4} = (∅ : Set) at h
   rw [eq_empty_iff_forall_notMem] at h
   aesop
 example : Disjoint (∅ : Set) ∅ := by aesop
@@ -1054,8 +1054,8 @@ theorem SetTheory.Set.coe_Disjoint (X Y : Set) :
     by_cases hW : W = ∅
     · simpa
     · obtain ⟨w, hx⟩ := nonempty_def hW
-      have := h hWX hWY hx
-      simp_all only [Set.bot_eq_empty, Set.mem_empty_iff_false]
+      by_contra
+      exact Set.disjoint_left.mp h (hWX _ hx) (hWY _ hx)
   · intro h W hWX hWY
     by_cases hW : W = ∅
     · simpa

@@ -359,7 +359,7 @@ noncomputable abbrev SetTheory.Set.iProd_equiv_prod_triple (X : ({0, 1, 2} : Set
       have := h.choose_spec
       rw [tuple_inj] at this
       rw [← this]
-    simp; rw [this]; aesop
+    simp [this, f]
 
 noncomputable abbrev SetTheory.Set.iProd_equiv_pi (I : Set) (X : I → Set) :
     iProd X ≃ Set.pi .univ (fun i : I ↦ ((X i) : _root_.Set Object)) where
@@ -655,7 +655,7 @@ theorem SetTheory.Set.prod_diff (A B C : Set) : A ×ˢ (B \ C) = (A ×ˢ B) \ (A
     use a, ha, b
     split_ands
     · assumption
-    · by_contra! hb
+    · by_contra hb
       have := h a ha b hb
       contradiction
     · assumption
@@ -700,7 +700,7 @@ theorem SetTheory.Set.diff_prod (A B C : Set) : (A \ B) ×ˢ C= (A ×ˢ C) \ (B 
     use a
     split_ands
     · assumption
-    · by_contra! ha
+    · by_contra ha
       have := h a ha b hb
       contradiction
     · use b
@@ -725,7 +725,7 @@ def SetTheory.Set.union_of_prod :
   apply isFalse
   push Not
   use ({1} : Set), ({2} : Set), ({3} : Set), ({4} : Set)
-  by_contra! h
+  by_contra h
   have h1 : ({1} : Set) ×ˢ ({2} : Set) ∪ ({3} : Set)×ˢ ({4} : Set) = {
       ((mk_cartesian (1 : Nat) (2 : Nat)) : Object),
       ((mk_cartesian (3 : Nat) (4 : Nat)) : Object)} := by
