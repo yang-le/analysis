@@ -1273,6 +1273,9 @@ theorem SetTheory.Set.two_to_two_iff {X Y : Set} (f : X → Y) : Function.Inject
 -/
 def SetTheory.Set.Permutations (n : ℕ) : Set := (Fin n ^ Fin n).specify (fun F ↦ Function.Bijective (pow_fun_equiv F))
 
+/--
+习题 3.6.12 (i) 第一部分
+-/
 theorem SetTheory.Set.Permutations_finite (n : ℕ) : (Permutations n).finite := by
   have h1 : Permutations n ⊆ Fin n ^ Fin n := specify_subset _
   have h2 := (card_pow (Fin_finite n) (Fin_finite n)).1
@@ -1310,10 +1313,316 @@ noncomputable def SetTheory.Set.perm_equiv_equiv {n : ℕ} : Permutations n ≃ 
     generalize_proofs _ h1
     simp [h1.choose_spec]
   right_inv e := by
-    simp [Permutations_toFun, Equiv.ofBijective]
-    generalize_proofs h1 h2
-    have := h1.choose_spec
-    sorry
+    simp [pow_fun_equiv, Permutations_toFun]
 }
+
+def SetTheory.Set.Fin.castSucc {n} (x : Fin n) : Fin (n + 1) := Fin_embed _ _ (by omega) x
+
+@[simp]
+lemma SetTheory.Set.Fin.castSucc_inj {n} {x y : Fin n} : castSucc x = castSucc y ↔ x = y := by grind [castSucc]
+
+@[simp]
+theorem SetTheory.Set.Fin.castSucc_ne {n} (x : Fin n) : castSucc x ≠ n := by
+  have := Fin.toNat_lt x
+  simp [castSucc]; omega
+
+noncomputable def SetTheory.Set.Fin.castPred {n} (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) : Fin n :=
+  Fin_mk _ (x : ℕ) (by have := Fin.toNat_lt x; omega)
+
+@[simp]
+theorem SetTheory.Set.Fin.castSucc_castPred {n} (x : Fin (n + 1)) (h : (x : ℕ) ≠ n) :
+  castSucc (castPred x h) = x := by simp [castSucc, castPred]
+
+@[simp]
+theorem SetTheory.Set.Fin.castPred_castSucc {n} (x : Fin n) (h : ((castSucc x : Fin (n + 1)) : ℕ) ≠ n) :
+  castPred (castSucc x) h = x := by simp [castSucc, castPred]
+
+def SetTheory.Set.Fin.last (n : ℕ) : Fin (n + 1) := Fin_mk _ n (by omega)
+
+theorem SetTheory.Set.card_iUnion_card_disjoint {n m : ℕ} {S : Fin n → Set}
+    (hSc : ∀ i, (S i).has_card m)
+    (hSd : Pairwise fun i j => Disjoint (S i) (S j)) :
+    ((Fin n).iUnion S).finite ∧ ((Fin n).iUnion S).card = n * m := by
+  induction' n with n hind
+  · have : ((Fin 0).iUnion S).has_card 0 := by
+      let f (x : (Fin 0).iUnion S) : Fin 0 := by
+        have := x.property
+        rw [mem_iUnion] at this
+        exact this.choose
+      use f
+      constructor
+      · intro _ _ h
+        simp [f] at h
+        generalize_proofs h1 _ at h
+        have := Fin.toNat_lt h1.choose
+        omega
+      · intro y
+        have := Fin.toNat_lt y
+        omega
+    simp; exact ⟨⟨0, this⟩, has_card_to_card this⟩
+  · let S' := fun i : Fin n ↦ S (Fin.castSucc i)
+    have hS'c : ∀ i, (S' i).has_card m := by
+      intro i
+      simp [S']
+      exact hSc _
+    have hS'd : Pairwise fun i j => Disjoint (S' i) (S' j) := by
+      simp only [S', Pairwise]
+      intro i j hij
+      have : Fin.castSucc i ≠ Fin.castSucc j := by
+        by_contra h
+        rw [Fin.castSucc_inj] at h
+        contradiction
+      exact hSd this
+    have := hind hS'c hS'd
+    constructor
+    · have : ∀ i, (S i).finite := by
+        intro i
+        exact ⟨m, hSc i⟩
+      exact iUnion_finite this
+    · have h1 : (Fin (n + 1)).iUnion S = (Fin n).iUnion S' ∪ (S (Fin.last n)) := by
+        ext x
+        rw [mem_union, mem_iUnion, mem_iUnion]
+        constructor <;> intro hx
+        · obtain ⟨a, ha⟩ := hx
+          by_cases h : a = n
+          · right
+            grind [Fin.last]
+          · left
+            use Fin.castPred a h
+            simpa [S']
+        · obtain (⟨a, ha⟩ | hx) := hx
+          · use Fin.castSucc a
+          · use Fin.last n
+      have h2 : Disjoint ((Fin n).iUnion S') (S (Fin.last n)) := by
+        rw [disjoint_iff]
+        simp [S']
+        by_contra
+        obtain ⟨x, hx⟩ := nonempty_def this
+        rw [mem_inter] at hx
+        obtain ⟨hx1, hx2⟩ := hx
+        rw [mem_iUnion] at hx1
+        obtain ⟨a, ha⟩ := hx1
+        have h : x ∈ S (Fin.last n) ∩ S (Fin.castSucc a) := by simp [hx2, ha]
+        have : S (Fin.last n) ∩ S (Fin.castSucc a) = ∅ := by
+          rw [← disjoint_iff]
+          exact hSd (by
+            by_contra
+            simp [Fin.last] at this
+            have := Fin.castSucc_ne a
+            omega
+          )
+        simp [this] at h
+      rw [h1, card_union_disjoint this.1 ⟨m, (hSc (Fin.last n))⟩ h2, this.2, has_card_to_card (hSc (Fin.last n))]
+      ring
+
+noncomputable def SetTheory.Set.Fin.predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) : Fin n :=
+  if hx : (x : ℕ) < i then
+    Fin_mk _ (x : ℕ) (by grind)
+  else
+    Fin_mk _ ((x : ℕ) - 1) (Nat.sub_lt_right_of_lt_add (by
+      have : i < (x : ℕ) := by grind
+      grind
+    ) (Fin.toNat_lt x))
+
+noncomputable def SetTheory.Set.Fin.succAbove {n} (i : Fin (n + 1)) (x : Fin n) : Fin (n + 1) :=
+  if (x : ℕ) < i then
+    Fin_embed _ _ (by simp) x
+  else
+    Fin_mk _ ((x : ℕ) + 1) (by grind)
+
+@[simp]
+theorem SetTheory.Set.Fin.succAbove_ne {n} (i : Fin (n + 1)) (x : Fin n) : succAbove i x ≠ i := by
+  simp only [succAbove]
+  by_cases h : (x : ℕ) < i <;> simp [h] <;> omega
+
+@[simp]
+theorem SetTheory.Set.Fin.succAbove_predAbove {n} (i : Fin (n + 1)) (x : Fin (n + 1)) (h : x ≠ i) :
+    (succAbove i) (predAbove i x h) = x := by
+  simp only [succAbove, predAbove]
+  by_cases h : (x : ℕ) < i <;> simp [h]
+  by_cases h' : ((x : ℕ) - 1) < i <;> simp [h']
+  · grind
+  · apply Nat.sub_add_cancel
+    have : (x : ℕ) > i := by grind
+    grind
+
+@[simp]
+theorem SetTheory.Set.Fin.predAbove_succAbove {n} (i : Fin (n + 1)) (x : Fin n) :
+    (predAbove i) (succAbove i x) (succAbove_ne i x) = x := by
+  simp only [predAbove, succAbove]
+  by_cases h : (x : ℕ) < i <;> simp [h]
+  by_cases h' : ((x : ℕ) + 1) < i <;> simp [h']
+  omega
+
+/--
+习题 3.6.12 (i) 第二部分
+-/
+theorem SetTheory.Set.Permutations_ih (n : ℕ) :
+    (Permutations (n + 1)).card = (n + 1) * (Permutations n).card := by
+  -- 根据p把n++映射到哪个值，把S_{n++}划分成n++个子集
+  let S i := (Permutations (n + 1)).specify (fun p ↦ perm_equiv_equiv p (Fin.last n) = i)
+
+  have hSe : ∀ i, S i ≈ Permutations n := by
+    intro i
+    have equiv : S i ≃ Permutations n := {
+      toFun s := by
+        have h1 := s.property
+        rw [specification_axiom''] at h1
+        have h2 := h1.choose
+        simp only [Permutations, specification_axiom''] at h2
+        have h3 := h2.choose
+        rw [powerset_axiom] at h3
+        let f := h3.choose
+        let fbij := h2.choose_spec
+        let f' (x : Fin n) : Fin n := Fin.predAbove i (f (Fin.succAbove (Fin.last n) x)) (by
+          by_contra h
+          rw [← h1.choose_spec] at h
+          have := fbij.1 h
+          have := Fin.succAbove_ne (Fin.last n) x
+          contradiction
+        )
+        have hf : ∀ x : Fin n, ¬f (Fin.succAbove (Fin.last n) x) < (i : ℕ) → f (Fin.succAbove (Fin.last n) x) > (i : ℕ) := by
+          intro x hx
+          have : ¬f (Fin.succAbove (Fin.last n) x) = i := by
+            by_contra h
+            rw [← h1.choose_spec] at h
+            have := fbij.1 h
+            have := Fin.succAbove_ne (Fin.last n) x
+            contradiction
+          simp at this
+          omega
+        have : Function.Bijective f' := by
+          constructor
+          · intro x1 x2 hx
+            simp [f', Fin.predAbove] at hx
+            by_cases hx1 : f (Fin.succAbove (Fin.last n) x1) < (i : ℕ) <;> simp [hx1] at hx <;>
+            by_cases hx2 : f (Fin.succAbove (Fin.last n) x2) < (i : ℕ) <;> simp [hx2] at hx
+            · have : f (Fin.succAbove (Fin.last n) x1) = f (Fin.succAbove (Fin.last n) x2) := by simpa
+              have := fbij.1 this
+              simp [Fin.succAbove, show (x1 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x1,
+                show (x2 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x2] at this
+              grind
+            · have := hf x2 hx2; omega
+            · have := hf x1 hx1; omega
+            · have : (f (Fin.succAbove (Fin.last n) x1) : ℕ) = f (Fin.succAbove (Fin.last n) x2) := by
+                have := hf x1 hx1
+                have := hf x2 hx2
+                omega
+              have : f (Fin.succAbove (Fin.last n) x1) = f (Fin.succAbove (Fin.last n) x2) := by simpa
+              have := fbij.1 this
+              simp [Fin.succAbove, show (x1 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x1,
+                show (x2 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x2] at this
+              grind
+          · intro y
+            simp [f']
+            let a := Fin.predAbove (Fin.last n) ((Equiv.ofBijective f fbij).symm (Fin.succAbove i y)) (by
+              by_contra h
+              have : Fin.succAbove i y = f (Fin.last n) := by
+                rw [← h]
+                change Fin.succAbove i y = (Equiv.ofBijective f fbij).toFun ((Equiv.ofBijective f fbij).invFun (Fin.succAbove i y))
+                rw [(Equiv.ofBijective f fbij).right_inv]
+              have := Fin.succAbove_ne i y
+              nth_rw 2 [← h1.choose_spec] at this
+              change Fin.succAbove i y ≠ f (Fin.last n) at this
+              contradiction
+            )
+            use a
+            obtain ⟨m, hm⟩ := (mem_Fin _ _).mp a.property
+            rw [hm.2]
+            use ⟨(m : nat).property, by simp [hm.1]⟩
+            simp [← hm.2, a]
+            generalize_proofs h4
+            change Fin.predAbove i ((Equiv.ofBijective f fbij).toFun ((Equiv.ofBijective f fbij).invFun (Fin.succAbove i y))) h4 = (y : ℕ)
+            simp
+        exact perm_equiv_equiv.symm (Equiv.ofBijective f' this)
+      invFun p := by
+        have := perm_equiv_equiv p
+        -- simp [S]
+        -- 构建f : Fin (n + 1) → Fin (n + 1)，满足f (Fin.last n) = i
+        open Classical in
+        let f (x : Fin (n + 1)) : Fin (n + 1) := if h : x = (Fin.last n) then i else Fin.succAbove i (perm_equiv_equiv p (Fin.predAbove (Fin.last n) x h))
+        have fbij : Function.Bijective f := by
+          constructor
+          · intro x1 x2 hx
+            simp only [f] at hx
+            by_cases hx1 : (x1 : ℕ) = Fin.last n <;> simp [hx1] at hx <;>
+            by_cases hx2 : (x2 : ℕ) = Fin.last n <;> simp [hx2] at hx
+            · grind
+            · simp only [Fin.succAbove] at hx
+              generalize_proofs h1 h2 h3 at hx
+              by_cases hi : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x2 h1) < (i : ℕ) <;>
+              simp [hi] at hx <;> omega
+            · simp only [Fin.succAbove] at hx
+              generalize_proofs h1 h2 h3 at hx
+              by_cases hi : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x1 h1) < (i : ℕ) <;>
+              simp [hi] at hx <;> omega
+            · simp only [Fin.succAbove] at hx
+              generalize_proofs h1 h2 h3 h4 h5 at hx
+              by_cases hi1 : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x1 h1) < (i : ℕ) <;> simp [hi1] at hx <;>
+              by_cases hi2 : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x2 h4) < (i : ℕ) <;> simp [hi2] at hx
+              on_goal 1 4 =>
+                simp only [Fin.predAbove] at hx
+                have : (x1 : ℕ) < Fin.last n := by
+                  simp [Fin.last]
+                  simp [Fin.last] at h1
+                  have := Fin.toNat_lt x1
+                  omega
+                simp [this] at hx
+                have : (x2 : ℕ) < Fin.last n := by
+                  simp [Fin.last]
+                  simp [Fin.last] at h4
+                  have := Fin.toNat_lt x2
+                  omega
+                simp [this] at hx
+                generalize_proofs hx1 hx2 at hx
+                have : (perm_equiv_equiv p) (Fin_mk n ↑x1 hx1) = (perm_equiv_equiv p) (Fin_mk n ↑x2 hx2) := by grind
+                simp at this; grind
+              all_goals omega
+          · intro y
+            sorry
+        let p' : Permutations (n + 1) := ⟨pow_fun_equiv.symm f, by
+          simp only [Permutations, specification_axiom'']
+          exact ⟨(pow_fun_equiv.symm f).property, by simpa⟩
+        ⟩
+        exact ⟨p', by
+          simp only [S, specification_axiom'']
+          exact ⟨p'.property, by
+            simp [p', perm_equiv_equiv, Permutations_toFun]
+            generalize_proofs h1
+            simp [(coe_of_fun_inj _ _).mp h1.choose_spec, f]
+          ⟩
+        ⟩
+      left_inv s := by sorry
+      right_inv p := by sorry
+    }
+    use equiv, equiv.injective, equiv.surjective
+
+  have hSc : ∀ i, (S i).has_card (Permutations n).card := by
+    intro i
+    have := has_card_card (Permutations_finite n)
+    rwa [EquivCard_to_has_card_eq (hSe i)]
+
+  have hSd : Pairwise fun i j ↦ Disjoint (S i) (S j) := by
+    simp only [Pairwise]
+    intro i j hij
+    rw [disjoint_iff]
+    by_contra h
+    obtain ⟨_, hx⟩ := nonempty_def h
+    obtain ⟨hx1, hx2⟩ := (mem_inter _ _ _).mp hx
+    rw [specification_axiom''] at hx1 hx2
+    have : i = j := by rw [← hx1.choose_spec, ← hx2.choose_spec]
+    contradiction
+
+  have : (iUnion _ S) = Permutations (n + 1) := by
+    simp only [S]; ext x
+    constructor
+    · intro h
+      obtain ⟨a, ha⟩ := (mem_iUnion _ _).mp h
+      exact specification_axiom ha
+    · intro h
+      rw [mem_iUnion]
+      use perm_equiv_equiv ⟨x, h⟩ (Fin.last n)
+      simpa
+  rw [← (card_iUnion_card_disjoint hSc hSd).2, this]
 
 end Chapter3
