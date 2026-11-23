@@ -1474,51 +1474,42 @@ theorem SetTheory.Set.Permutations_ih (n : ℕ) :
         rw [powerset_axiom] at h3
         let f := h3.choose
         let fbij := h2.choose_spec
-        let f' (x : Fin n) : Fin n := Fin.predAbove i (f (Fin.succAbove (Fin.last n) x)) (by
+        let f' (x : Fin n) : Fin n := Fin.predAbove i (f (Fin.castSucc x)) (by
           by_contra h
           rw [← h1.choose_spec] at h
           have := fbij.1 h
-          have := Fin.succAbove_ne (Fin.last n) x
-          contradiction
+          simp [Fin.last] at this
         )
-        have hf : ∀ x : Fin n, ¬f (Fin.succAbove (Fin.last n) x) < (i : ℕ) → f (Fin.succAbove (Fin.last n) x) > (i : ℕ) := by
+        have hf : ∀ x : Fin n, ¬f (Fin.castSucc x) < (i : ℕ) → f (Fin.castSucc x) > (i : ℕ) := by
           intro x hx
-          have : ¬f (Fin.succAbove (Fin.last n) x) = i := by
+          have : ¬f (Fin.castSucc x) = i := by
             by_contra h
             rw [← h1.choose_spec] at h
             have := fbij.1 h
-            have := Fin.succAbove_ne (Fin.last n) x
-            contradiction
+            simp [Fin.last] at this
           simp at this
           omega
         have : Function.Bijective f' := by
           constructor
           · intro x1 x2 hx
             simp [f', Fin.predAbove] at hx
-            by_cases hx1 : f (Fin.succAbove (Fin.last n) x1) < (i : ℕ) <;> simp [hx1] at hx <;>
-            by_cases hx2 : f (Fin.succAbove (Fin.last n) x2) < (i : ℕ) <;> simp [hx2] at hx
-            · have : f (Fin.succAbove (Fin.last n) x1) = f (Fin.succAbove (Fin.last n) x2) := by simpa
-              have := fbij.1 this
-              simp [Fin.succAbove, show (x1 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x1,
-                show (x2 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x2] at this
-              grind
+            by_cases hx1 : f (Fin.castSucc x1) < (i : ℕ) <;> simp [hx1] at hx <;>
+            by_cases hx2 : f (Fin.castSucc x2) < (i : ℕ) <;> simp [hx2] at hx
+            · exact Fin.castSucc_inj.mp (fbij.1 (by simpa))
             · have := hf x2 hx2; omega
             · have := hf x1 hx1; omega
-            · have : (f (Fin.succAbove (Fin.last n) x1) : ℕ) = f (Fin.succAbove (Fin.last n) x2) := by
+            · have : (f (Fin.castSucc x1) : ℕ) = f (Fin.castSucc x2) := by
                 have := hf x1 hx1
                 have := hf x2 hx2
                 omega
-              have : f (Fin.succAbove (Fin.last n) x1) = f (Fin.succAbove (Fin.last n) x2) := by simpa
-              have := fbij.1 this
-              simp [Fin.succAbove, show (x1 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x1,
-                show (x2 : ℕ) < Fin.last n by simp [Fin.last]; exact Fin.toNat_lt x2] at this
-              grind
+              exact Fin.castSucc_inj.mp (fbij.1 (by simpa))
           · intro y
             simp [f']
-            let a := Fin.predAbove (Fin.last n) ((Equiv.ofBijective f fbij).symm (Fin.succAbove i y)) (by
+            let a := Fin.castPred ((Equiv.ofBijective f fbij).symm (Fin.succAbove i y)) (by
               by_contra h
               have : Fin.succAbove i y = f (Fin.last n) := by
-                rw [← h]
+                have : ((Equiv.ofBijective f fbij).symm (Fin.succAbove i y)) = Fin.last n := by simp [h, Fin.last]
+                rw [← this]
                 change Fin.succAbove i y = (Equiv.ofBijective f fbij).toFun ((Equiv.ofBijective f fbij).invFun (Fin.succAbove i y))
                 rw [(Equiv.ofBijective f fbij).right_inv]
               have := Fin.succAbove_ne i y
@@ -1537,49 +1528,40 @@ theorem SetTheory.Set.Permutations_ih (n : ℕ) :
         exact perm_equiv_equiv.symm (Equiv.ofBijective f' this)
       invFun p := by
         have := perm_equiv_equiv p
-        -- simp [S]
         -- 构建f : Fin (n + 1) → Fin (n + 1)，满足f (Fin.last n) = i
         open Classical in
-        let f (x : Fin (n + 1)) : Fin (n + 1) := if h : x = (Fin.last n) then i else Fin.succAbove i (perm_equiv_equiv p (Fin.predAbove (Fin.last n) x h))
+        let f (x : Fin (n + 1)) : Fin (n + 1) := if h : x = n then i else Fin.succAbove i (perm_equiv_equiv p (Fin.castPred x h))
         have fbij : Function.Bijective f := by
           constructor
           · intro x1 x2 hx
             simp only [f] at hx
-            by_cases hx1 : (x1 : ℕ) = Fin.last n <;> simp [hx1] at hx <;>
-            by_cases hx2 : (x2 : ℕ) = Fin.last n <;> simp [hx2] at hx
+            by_cases hx1 : x1 = n <;> simp [hx1] at hx <;>
+            by_cases hx2 : x2 = n <;> simp [hx2] at hx
             · grind
             · simp only [Fin.succAbove] at hx
               generalize_proofs h1 h2 h3 at hx
-              by_cases hi : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x2 h1) < (i : ℕ) <;>
+              by_cases hi : perm_equiv_equiv p (Fin.castPred x2 h1) < (i : ℕ) <;>
               simp [hi] at hx <;> omega
             · simp only [Fin.succAbove] at hx
               generalize_proofs h1 h2 h3 at hx
-              by_cases hi : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x1 h1) < (i : ℕ) <;>
+              by_cases hi : perm_equiv_equiv p (Fin.castPred x1 h1) < (i : ℕ) <;>
               simp [hi] at hx <;> omega
             · simp only [Fin.succAbove] at hx
               generalize_proofs h1 h2 h3 h4 h5 at hx
-              by_cases hi1 : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x1 h1) < (i : ℕ) <;> simp [hi1] at hx <;>
-              by_cases hi2 : perm_equiv_equiv p (Fin.predAbove (Fin.last n) x2 h4) < (i : ℕ) <;> simp [hi2] at hx
+              by_cases hi1 : perm_equiv_equiv p (Fin.castPred x1 h1) < (i : ℕ) <;> simp [hi1] at hx <;>
+              by_cases hi2 : perm_equiv_equiv p (Fin.castPred x2 h4) < (i : ℕ) <;> simp [hi2] at hx
               on_goal 1 4 =>
-                simp only [Fin.predAbove] at hx
-                have : (x1 : ℕ) < Fin.last n := by
-                  simp [Fin.last]
-                  simp [Fin.last] at h1
-                  have := Fin.toNat_lt x1
-                  omega
-                simp [this] at hx
-                have : (x2 : ℕ) < Fin.last n := by
-                  simp [Fin.last]
-                  simp [Fin.last] at h4
-                  have := Fin.toNat_lt x2
-                  omega
-                simp [this] at hx
+                simp only [Fin.castPred] at hx
                 generalize_proofs hx1 hx2 at hx
                 have : (perm_equiv_equiv p) (Fin_mk n ↑x1 hx1) = (perm_equiv_equiv p) (Fin_mk n ↑x2 hx2) := by grind
                 simp at this; grind
               all_goals omega
           · intro y
-            sorry
+            by_cases h : y = i
+            · use Fin.last n
+              simp [f, Fin.last, h]
+            · use Fin.castSucc ((perm_equiv_equiv p).symm (Fin.predAbove i y h))
+              simp [f]
         let p' : Permutations (n + 1) := ⟨pow_fun_equiv.symm f, by
           simp only [Permutations, specification_axiom'']
           exact ⟨(pow_fun_equiv.symm f).property, by simpa⟩
@@ -1589,11 +1571,27 @@ theorem SetTheory.Set.Permutations_ih (n : ℕ) :
           exact ⟨p'.property, by
             simp [p', perm_equiv_equiv, Permutations_toFun]
             generalize_proofs h1
-            simp [(coe_of_fun_inj _ _).mp h1.choose_spec, f]
+            simp [(coe_of_fun_inj _ _).mp h1.choose_spec, f, Fin.last]
           ⟩
         ⟩
-      left_inv s := by sorry
-      right_inv p := by sorry
+      left_inv s := by
+        have hsS := s.property
+        rw [specification_axiom''] at hsS
+        have hlast := hsS.choose_spec
+        simp
+        generalize_proofs h1 h2 h3 h4 h5
+        simp [pow_fun_equiv]
+        congr
+        have hfun : (open Classical in fun x : Fin (n + 1) ↦ if x = n then i else h1.choose x) = h1.choose := by
+          ext x
+          by_cases hx : x = n <;> simp [hx]
+          simp [← hlast, perm_equiv_equiv, Permutations_toFun, show Fin.last n = x by simp [Fin.last, hx]]
+        simp [hfun, h1.choose_spec]
+      right_inv p := by
+        simp [perm_equiv_equiv, pow_fun_equiv]
+        generalize_proofs h1 h2 h3 h4 h5 h6 h7
+        congr
+        sorry
     }
     use equiv, equiv.injective, equiv.surjective
 
