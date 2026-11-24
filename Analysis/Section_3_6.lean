@@ -1579,7 +1579,7 @@ theorem SetTheory.Set.Permutations_ih (n : ℕ) :
         rw [specification_axiom''] at hsS
         have hlast := hsS.choose_spec
         simp
-        generalize_proofs h1 h2 h3 h4 h5
+        generalize_proofs h1
         simp [pow_fun_equiv]
         congr
         have hfun : (open Classical in fun x : Fin (n + 1) ↦ if x = n then i else h1.choose x) = h1.choose := by
@@ -1589,9 +1589,15 @@ theorem SetTheory.Set.Permutations_ih (n : ℕ) :
         simp [hfun, h1.choose_spec]
       right_inv p := by
         simp [perm_equiv_equiv, pow_fun_equiv]
-        generalize_proofs h1 h2 h3 h4 h5 h6 h7
+        generalize_proofs _ _ _ _ h5 h6 h7
         congr
-        sorry
+        let p' : Permutations n := ⟨fun x ↦ Fin.predAbove i (h5.choose (Fin.castSucc x)) (h6 x), h7⟩
+        have : p' = p := by
+          have := (coe_of_fun_inj _ _).mp h5.choose_spec
+          simp only [Permutations_toFun] at this
+          rw [← Permutations_inj]
+          simp [p', Permutations_toFun, pow_fun_equiv, this]
+        grind
     }
     use equiv, equiv.injective, equiv.surjective
 
@@ -1622,5 +1628,36 @@ theorem SetTheory.Set.Permutations_ih (n : ℕ) :
       use perm_equiv_equiv ⟨x, h⟩ (Fin.last n)
       simpa
   rw [← (card_iUnion_card_disjoint hSc hSd).2, this]
+
+/--
+习题 3.6.12 (ii)
+-/
+theorem SetTheory.Set.Permutations_card (n : ℕ) :
+    (Permutations n).card = n.factorial := by
+  induction' n with n hind
+  · simp
+    rw [has_card_to_card]
+    use fun _ ↦ Fin_mk 1 0 (by simp)
+    constructor
+    · intro _ _ _
+      rw [← Permutations_inj]
+      ext x
+      have := Fin.toNat_lt x
+      simp at this
+    · intro y
+      use perm_equiv_equiv.symm {
+        toFun x := by
+          have := Fin.toNat_lt x
+          simp at this
+        invFun y := by
+          have := Fin.toNat_lt y
+          simp at this
+        left_inv := by grind
+        right_inv := by grind
+      }
+      have := Fin.toNat_lt y
+      grind
+  · rw [Permutations_ih, hind]
+    simp [Nat.factorial]
 
 end Chapter3
